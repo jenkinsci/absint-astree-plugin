@@ -1,0 +1,8 @@
+The AbsInt Astrée Jenkins Plugin will be part of the continuous integration build process on DEV@cloud.
+You will be able to directly access and install the plugin from your Jenkins -> Manage Jenkins -> Manage Plugins site.
+
+
+If you want to manually build the plugin you can use the following Maven command in the "pom.xml" project directory:
+"mvn package"
+
+A "target" directory including the "astree.hpi" binary version of the plugin will be generated. 

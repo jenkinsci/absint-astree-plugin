@@ -1,0 +1,48 @@
+<div>
+   This option allow Astrée to fail a build depeneding on the types of detected code defects.
+   The following settings are available:
+   <ul>
+      <li>
+          <tt>Only Errors</tt>
+          <br/>
+          ... lets Astrée fail a build if an Error (Definite Type A Alarm) is reported.
+          <br/>
+          This is the preferred setting for most use cases.
+          A build is failed if Astrée can formally show the presence of a severe code defect in a (analysis) context.
+     </li>
+
+     <li>
+          <tt>Errors and True Alarms</tt>
+          <br/>
+          ... lets Astrée fail a build if an Error or an Alarm (Definite Type A Alarm or Potential Alarm of Type B or Type C) which has been classified as a true alarm is reported.
+          <br/>
+          This is the preferred setting in case Astrée's findings classification is used.
+      </li>
+  
+     </li>
+     <li>
+          <tt>Errors and Uncommented Alarms</tt>
+          <br/>
+          ... lets Astrée fail a build if an Error or an uncommented Alarm (Definite Type A Alarm or Potential Alarm of Type B or Type C) is reported.
+          <br/>
+          This is the preferred setting in case usage of Astrée's findings classification and commenting mechanism is mandatory.
+      </li>
+
+     </li>
+     <li>
+          <tt>Errors and Alarms</tt>
+          <br/>
+          ... lets Astrée fail a build if an Error or Alarm (Definite Type A Alarm or Potential Alarm of Type B or Type C) is reported.
+          <br/>
+          This is the preferred setting in case the absence of runtime errors in an application is to be formally shown.
+          A build is failed if Astrée reports potential runtime errors. 
+      </li>
+      <li>
+          <tt>Errors, Alarms, and Data-Flow Anomalies</tt>
+          <br/>
+          ... lets Astrée fail a build if and only if any type of alarm (definite/potential Type A, B, C or D) is reported.
+          <br/>
+          This setting fails builds on any reported potential code defect or anomaly.
+      </li>
+   </ul>
+</div>

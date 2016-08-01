@@ -1,0 +1,562 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2016, AbsInt Angewandte Informatik GmbH
+ * Author: Dr.-Ing. Joerg Herter
+ * Email: herter@absint.com
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+package com.absint.astree;
+import hudson.Proc;
+import hudson.Launcher;
+import hudson.Extension;
+import hudson.FilePath;
+import hudson.util.FormValidation;
+import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
+import hudson.tasks.Builder;
+import hudson.tasks.BuildStepDescriptor;
+import jenkins.tasks.SimpleBuildStep;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.QueryParameter;
+
+import javax.servlet.ServletException;
+import java.io.*;
+import java.util.*;
+
+/**
+ *
+ * When the user configures the project and enables this builder,
+ * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
+ * and a new {@link AstreeBuilder} is created. The created
+ * instance is persisted to the project configuration XML by using
+ * XStream, so this allows you to use instance fields 
+ * to remember the configuration.
+ *
+ * When a build is performed, the {@link #perform} method will be invoked. 
+ *
+ * @author AbsInt Angewandte Informatik GmbH
+ */
+public class AstreeBuilder extends Builder implements SimpleBuildStep {
+    private final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
+    private final String BUILD_NR    = "000001";
+
+    private final String TMP_REPORT_FILE = "absint_astree_analysis_report.txt";
+    private final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
+
+    private String dax_file, output_dir, analysis_id;
+    private FailonSwitch failonswitch;
+    private boolean genXMLOverview, genXMLCoverage, genXMLAlarmsByOccurence, 
+                    genXMLAlarmsByCategory, genXMLAlarmsByFile, genXMLRulechecks,
+                    genPreprocessOutput, dropAnalysis;
+
+    // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
+    @DataBoundConstructor
+    public AstreeBuilder( String dax_file, String analysis_id, String output_dir, 
+                          boolean genXMLOverview, boolean genXMLCoverage, boolean genXMLAlarmsByOccurence,
+                          boolean genXMLAlarmsByCategory, boolean genXMLAlarmsByFile, boolean genXMLRulechecks,
+                          boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch
+                        ) 
+    {
+        this.dax_file     = dax_file;
+        this.analysis_id  = analysis_id;
+        this.output_dir   = output_dir;
+        this.failonswitch = failonswitch;
+
+        this.genXMLOverview          = genXMLOverview;
+        this.genXMLCoverage          = genXMLCoverage;
+        this.genXMLAlarmsByOccurence = genXMLAlarmsByOccurence;
+        this.genXMLAlarmsByCategory  = genXMLAlarmsByCategory;
+        this.genXMLAlarmsByFile      = genXMLAlarmsByFile;
+        this.genXMLRulechecks        = genXMLRulechecks;
+
+        this.dropAnalysis            = dropAnalysis;
+        this.genPreprocessOutput     = genPreprocessOutput;
+    }
+
+
+    /*
+     * Interface to <tt>config.jelly</tt>.
+     */
+
+    /**
+     * Returns the currently set path to the DAX file used for the analysis run.
+     *
+     * @return java.lang.String
+     */
+    public String getDax_file() {
+        return dax_file;
+    }
+
+    /**
+     * Returns the currently set analysis ID used for the analysis run.
+     *
+     * @return java.lang.String
+     */
+    public String getAnalysis_id() {
+        return analysis_id;
+    } 
+
+    /**
+     * Returns the currently set path used as output directory for the analyses.
+     *
+     * @return java.lang.String
+     */
+    public String getOutput_dir() {
+        return output_dir;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to potentially fail a build.
+     *
+     * @return boolean
+     */
+    public boolean isFailonswitch() {
+        return (this.failonswitch != null);
+    }
+
+    /**
+     * @return java.lang.String
+     */
+    public String getFailon() {
+        if(this.failonswitch == null) return ""; 
+        return this.failonswitch.getFailon();
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * XML overview summary.
+     *
+     * @return boolean
+     */
+    public boolean isGenXMLOverview() {
+        return this.genXMLOverview;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * XML coverage summary.
+     *
+     * @return boolean
+     */
+    public boolean isGenXMLCoverage() {
+        return this.genXMLCoverage;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * XML alarms-by-occurence summary.
+     *
+     * @return boolean
+     */
+    public boolean isGenXMLAlarmsByOccurence() {
+        return this.genXMLAlarmsByOccurence;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * XML alarms-by-category summary.
+     *
+     * @return boolean
+     */
+    public boolean isGenXMLAlarmsByCategory() {
+        return this.genXMLAlarmsByCategory;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * XML alarms-by-file summary.
+     *
+     * @return boolean
+     */
+    public boolean isGenXMLAlarmsByFile() {
+        return this.genXMLAlarmsByFile;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * XML rule checks summary.
+     *
+     * @return boolean
+     */
+    public boolean isGenXMLRulechecks() {
+        return this.genXMLRulechecks;
+    }
+
+    /**
+     * Indicates whether the analysis run is configured to produce the
+     * (text) preprocess output report.
+     *
+     * @return boolean
+     */
+    public boolean isGenPreprocessOutput() {
+        return this.genPreprocessOutput;
+    }
+
+    /**
+     * Indicates whether the project is to be deleted on the server after
+     * the analysis run.
+     *
+     * @return boolean
+     */
+    public boolean isDropAnalysis() {
+        return this.dropAnalysis;
+    }
+
+
+    /*
+     *  end interface to <tt>config.jelly</tt>.
+     */
+
+
+
+    private String constructCommandLineCall(String reportfile, String preprocessoutput ) {
+        String cmd = getDescriptor().getAlauncher();
+
+        cmd = cmd  + " -a -b -s "                        +
+                     getDescriptor().getAstree_server()  + " "                     +
+                     ((this.analysis_id != null && !this.analysis_id.trim().equals("")) ?
+                        (" --id " + this.analysis_id) : "" )                       +
+                     ((this.dax_file != null && !this.dax_file.trim().equals("") )      ?
+                        (" --import \"" + this.dax_file + "\"") : "")              +
+                     " --report-file " + "\"" + reportfile + "\"";
+
+        if(this.genXMLOverview)
+                cmd += " --report-overview " + "\"" + output_dir + "/Overview.xml\"";
+        if(this.genXMLCoverage)
+                cmd += " --report-coverage " + "\"" + output_dir + "/Coverage.xml\"";
+        if(this.genXMLAlarmsByOccurence)
+                cmd += " --report-alarmsByOccurence " + "\"" + output_dir + "/AlarmsByOccurence.xml\"";
+        if(this.genXMLAlarmsByCategory)
+                cmd += " --report-alarmsByCategory " + "\"" + output_dir + "/AlarmsByCategory.xml\"";
+        if(this.genXMLAlarmsByFile)
+                cmd += " --report-alarmsByFile " + "\"" + output_dir + "/AlarmsByFile.xml\"";
+        if(this.genXMLRulechecks)
+                cmd += " --report-rulechecks " + "\"" + output_dir + "/Rulechecks.xml\"";
+        if(this.genPreprocessOutput)
+                cmd += " --preprocess-report-file " + "\"" + preprocessoutput + "\""; 
+        if(this.dropAnalysis)
+                cmd += " --drop";
+
+        return cmd; 
+    }
+
+
+    @Override
+    public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+        // Analysis run started. ID plugin in Jenkins output.
+        listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
+
+        // Set some defaults and parameters.
+        if(output_dir == null || output_dir.equals(""))
+            output_dir = workspace.toString();
+        String reportfile = workspace.toString() + "/" + TMP_REPORT_FILE;
+
+        // Print some configuration info.
+        if(failonswitch != null) 
+            listener.getLogger().println( "Astrée fails build on " + failonswitch.getFailon() );        
+        listener.getLogger().println( "Summary reports will be generated in " + output_dir );
+
+
+        String cmd = this.constructCommandLineCall( reportfile,
+                                                    workspace.toString() + "/" + TMP_PREPROCESS_OUTPUT  );
+        int exitCode = -1;
+
+        try {
+            Proc proc = launcher.launch( cmd, // command line call to Astree
+                                         build.getEnvVars(), 
+                                         listener.getLogger(),
+                                         workspace );
+            exitCode = proc.join();          // wait for Astree to finish
+            if(exitCode == 0)
+                listener.getLogger().println("Analysis run succeeded.");
+            else 
+                listener.getLogger().println("Analysis run failed.");
+         } catch (IOException e) {
+            e.printStackTrace();
+            listener.getLogger().println("IOException caught during analysis run.");
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+            listener.getLogger().println("InterruptedException caught during analysis run.");
+         }
+         if(exitCode == 0) { // activities after successful analysis run
+                // append analysis report/output to Jenkins output
+		copyText2PrintStream(listener.getLogger(), reportfile);
+                /* Read analysis summary and 
+                   check whether Astrée shall fail the build due to reported errors etc */
+                AnalysisSummary summary = AnalysisSummary.readFromReportFile(reportfile);
+                if(      failonswitch != null && failonswitch.failOnErrors() 
+                      && summary.getNumberOfErrors() > 0) {
+                    listener.getLogger().println( "Errors reported! Number of errors: " + 
+                                                  summary.getNumberOfErrors());
+                    build.setResult(hudson.model.Result.FAILURE);
+                }                
+                else if(     failonswitch != null && failonswitch.failOnAlarms() 
+                          && summary.getNumberOfAlarms() > 0) {
+                    listener.getLogger().println( "Alarms reported! Number of alarms: " + 
+                                                  summary.getNumberOfAlarms());
+
+                    build.setResult(hudson.model.Result.FAILURE);
+                }
+                else if(     failonswitch != null && failonswitch.failOnDataflowAnomalies()
+                          && (   summary.getNumberOfDataflowAnomalies() 
+                               + summary.getNumberOfAlarms() > 0) ) {
+                    build.setResult(hudson.model.Result.FAILURE);
+                }
+         } else {  // activities after unsuccessful analysis run
+                // If Astrée cannot be invoked, conservatively fail the build...   
+                build.setResult(hudson.model.Result.FAILURE);
+         }
+    }
+
+    // Overridden for better type safety.
+    // If your plugin doesn't really define any property on Descriptor,
+    // you don't have to do this.
+    @Override
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
+    }
+
+
+
+    private void copyText2PrintStream( PrintStream dest, String srcPath ) {
+        dest.println("Appending analysis report.");
+        try{
+            FileReader     fr = new FileReader( new File(srcPath) );
+            BufferedReader br = new BufferedReader(fr);
+            String line = br.readLine() ;
+            while(line != null) {
+                dest.println(line);
+                line = br.readLine();
+            }
+            br.close();
+        } catch(Exception e) {
+        }       
+    }   
+
+
+    /**
+     * Descriptor for {@link AstreeBuilder}. Used as a singleton.
+     * The class is marked as public so that it can be accessed from views.
+     *
+     * <br>
+     */
+    @Extension // This indicates to Jenkins that this is an implementation of an extension point.
+    public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+        /*
+         * To persist global configuration information,
+         * simply store it in a field and call save().
+         *
+         *
+         * If you don't want fields to be persisted, use "transient".
+         */
+
+        /*
+         * Properties set by the Astree configuration mask:
+         *     Jenkins~~~Manage Jenkins~~~Configure System
+         */
+        private String alauncher;
+        private String astree_server;
+        private String user, password;
+
+        /**
+         * Constructor.
+         * <br>
+         * Constructs a new object of this class and
+         * loads the persisted global configuration.
+         */
+        public DescriptorImpl() {
+            load();
+        }
+
+        /**
+         * Return the human readable name  used in the configuration screen.
+         *
+         * @return java.lang.String
+         */
+        public String getDisplayName() {
+            return "Astrée Analysis Run";
+        }
+
+
+/**
+ * Performs on-the-fly validation of the form field 'astree_server'.
+ *
+ * @param value      The value that the user has typed.
+ * @return
+ *      Indicates the outcome of the validation. This is sent to the browser.
+ *      <br>
+ *      Note that returning {@link FormValidation#error(String)} does not
+ *      prevent the form from being saved. It just means that a message
+ *      will be displayed to the user. 
+ * @throws IOException               as super class
+ * @throws ServletException          as super class
+ **/
+        public FormValidation doCheckAstree_server(@QueryParameter String value)
+                throws IOException, ServletException {
+            if (value.length() == 0)
+                return FormValidation.error("Please set a valid server of form <hostname>:<port>");
+            if (!value.matches("[a-zA-Z_0-9]+:\\d{1,5}"))
+                return FormValidation.warning("The Astrée Server needs to be specified as a hostname followed by a colon followed by a port number.");
+            return FormValidation.ok();
+        }
+
+/**
+ * Performs on-the-fly validation of the form field 'alauncher'.
+ *
+ * @param value           The value that the user has typed.
+ * @return
+ *      Indicates the outcome of the validation. This is sent to the browser.
+ *      <br>
+ *      Note that returning {@link FormValidation#error(String)} does not
+ *      prevent the form from being saved. It just means that a message
+ *      will be displayed to the user.
+ * @throws IOException             as super class
+ * @throws ServletException        as super class
+ **/
+        public FormValidation doCheckAlauncher(@QueryParameter String value)
+                throws IOException, ServletException {
+            File ftmp = new File(value);
+            if (!ftmp.exists())
+                return FormValidation.error("Specified file not found.");
+            if (!ftmp.canExecute())
+                return FormValidation.error("Specified file cannot be executed.");
+            return FormValidation.ok();
+        }
+
+
+/**
+ * Performs on-the-fly validation of the form field 'dax_file'.
+ *
+ * @param value
+ *      This parameter receives the value that the user has typed.
+ * @return
+ *      Indicates the outcome of the validation. This is sent to the browser.
+ *      <br>
+ *      Note that returning {@link FormValidation#error(String)} does not
+ *      prevent the form from being saved. It just means that a message
+ *      will be displayed to the user. 
+ * @throws IOException               as super class
+ * @throws ServletException          as super class
+ **/
+        public FormValidation doCheckDax_file(@QueryParameter String value)
+                throws IOException, ServletException {
+            File ftmp = new File(value);
+            if (!ftmp.exists())
+                return FormValidation.error("Specified file not found.");
+            if (!ftmp.canRead())
+                return FormValidation.error("Specified file cannot be read.");
+            if (!value.endsWith(".dax"))
+                return FormValidation.warning("The specified file exists, but does not have the expected suffix (.dax).");
+            return FormValidation.ok();
+        }
+
+/**
+ * Performs on-the-fly validation of the form field 'analysis_id'.
+ *
+ * @param value
+ *      This parameter receives the value that the user has typed.
+ * @return
+ *      Indicates the outcome of the validation. This is sent to the browser.
+ *      <br>
+ *      Note that returning {@link FormValidation#error(String)} does not
+ *      prevent the form from being saved. It just means that a message
+ *      will be displayed to the user. 
+ * @throws IOException               as super class
+ * @throws ServletException          as super class
+ **/
+        public FormValidation doCheckAnalysis_id(@QueryParameter String value)
+                throws IOException, ServletException {
+            if(!value.matches("\\d*"))
+               return FormValidation.error("ID is not valid.");
+            return FormValidation.ok();
+        }
+
+
+
+/**
+ * Indicates that this builder can be used with all kinds of project types.
+ *
+ * @return boolean
+ */
+        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+            return true;
+        }
+
+/**
+ * Sets a new configuration.
+ * 
+ * @throws FormException           as super class
+ */
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+            // To persist global configuration information,
+            // set that to properties and call save().
+            this.alauncher     = formData.getString("alauncher");
+            this.astree_server = formData.getString("astree_server");
+            this.user          = formData.getString("user");
+            this.password      = formData.getString("password");
+            // ... data set, so call save(): 
+            save();
+            return super.configure(req,formData);
+        }
+
+/**
+ * Returns the currently configured Astrée server
+ * (as <i>host:port</i>).
+ *
+ * @return java.lang.String
+ */
+        public String getAstree_server() {
+            return this.astree_server;
+        }
+
+/**
+ * Returns the currently configured alauncher.
+ *
+ * @return java.lang.String
+*/
+        public String getAlauncher() {
+            return this.alauncher;
+        }
+
+/**
+ * Returns the currently configured Astrée user.
+ *
+ * @return java.lang.String
+ */
+        public String getUser() {
+            return this.user;
+        }
+
+/**
+ * Returns the currently configured Astrée (user) password.
+ *
+ * @return java.lang.String
+ */
+        public String getPassword() {
+            return this.password;
+        }
+    }
+}

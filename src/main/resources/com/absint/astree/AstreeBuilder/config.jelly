@@ -1,0 +1,98 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    This jelly script is used for per-project configuration.
+
+    See global.jelly for a general discussion about jelly script.
+  -->
+
+
+  <f:section title="Basic Settings">
+
+  <f:entry title="Analysis Configuration (DAX)" field="dax_file">
+    <f:textbox />
+  </f:entry>
+  <f:entry title="Analysis ID" field="analysis_id">
+    <f:textbox />
+  </f:entry>
+
+
+  <f:entry>
+  <f:block>
+    <table>
+      <f:optionalBlock title="Let Astrée fail the build on findings ..."
+                       field="failonswitch" checked="${instance.isFailonswitch()}">
+        <f:entry title="... on:">
+           <select name="failon" field="failon">
+               <f:option value="errors"
+                         selected="${instance.getFailon() == 'errors'}">
+                   Only Errors
+               </f:option>
+<!--
+               <f:option value="true-alarms"
+                         selected="${instance.getFailon() == 'true-alarms'}">
+                   Errors and True Alarms
+               </f:option>
+               <f:option value="uncommented-alarms"
+                         selected="${instance.getFailon() == 'uncommented-alarms'}">
+                   Errors and Uncommented Alarms
+               </f:option>
+-->
+               <f:option value="alarms"
+                         selected="${instance.getFailon() == 'alarms'}">
+                   Errors and Alarms
+               </f:option>
+               <f:option value="data-flow-anomalies"
+                         selected="${instance.getFailon() == 'data-flow-anomalies'}">
+                   Errors, Alarms, and Data-Flow Anomalies
+               </f:option>
+
+           </select>
+        </f:entry>
+      </f:optionalBlock>
+    </table>
+  </f:block>
+  </f:entry>
+
+  </f:section>
+
+  <f:section title="Summary Reports">
+    <f:advanced>
+      <f:block>
+  <f:entry title="Base Directory for Summaries" field="output_dir">
+    <f:textbox />
+  </f:entry>
+  <f:entry title="Summaries to generate:"/>
+    <f:entry title="Overview Report" field="genXMLOverview">
+     <f:checkbox/>
+    </f:entry>
+    <f:entry title="Coverage Report" field="genXMLCoverage">
+     <f:checkbox/>
+    </f:entry>
+    <f:entry title="Alarms by Occurence" field="genXMLAlarmsByOccurence">
+     <f:checkbox/>
+    </f:entry>
+    <f:entry title="Alarms by Category" field="genXMLAlarmsByCategory">
+     <f:checkbox/>
+    </f:entry>
+    <f:entry title="Alarms by File" field="genXMLAlarmsByFile">
+     <f:checkbox/>
+    </f:entry>
+    <f:entry title="Rulechecker report" field="genXMLRulechecks">
+     <f:checkbox/>
+    </f:entry>
+      </f:block>
+    </f:advanced>
+  </f:section>
+
+ <f:section title="Options">
+  <f:entry title="Delete the project from the server after the analysis run" field="dropAnalysis">
+    <f:checkbox/>
+  </f:entry>
+
+  <f:entry title="Generate text report containing the detailed preprocessing output in project workspace" field="genPreprocessOutput">
+    <f:checkbox/>
+  </f:entry>
+ </f:section>
+
+</j:jelly>
