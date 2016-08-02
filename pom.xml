@@ -13,7 +13,7 @@
 
 
   <groupId>com.absint</groupId>
-  <artifactId>astree</artifactId>
+  <artifactId>absint-astree</artifactId>
   <version>1.0.0</version>
   <packaging>hpi</packaging>
 
