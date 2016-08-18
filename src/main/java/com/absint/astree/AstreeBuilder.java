@@ -415,7 +415,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  **/
         public FormValidation doCheckAstree_server(@QueryParameter String value)
                 throws IOException, ServletException {
-            if (value.length() == 0)
+            if(value == null || value.trim().equals("") )
                 return FormValidation.error("Please set a valid server of form <hostname>:<port>");
             if (!value.matches("[a-zA-Z_0-9]+:\\d{1,5}"))
                 return FormValidation.warning("The Astrée Server needs to be specified as a hostname followed by a colon followed by a port number.");
@@ -437,11 +437,15 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  **/
         public FormValidation doCheckAlauncher(@QueryParameter String value)
                 throws IOException, ServletException {
+            if(value == null || value.trim().equals("") )
+               return FormValidation.error("No file specified.");
+
             File ftmp = new File(value);
             if (!ftmp.exists())
                 return FormValidation.error("Specified file not found.");
             if (!ftmp.canExecute())
                 return FormValidation.error("Specified file cannot be executed.");
+
             return FormValidation.ok();
         }
 
@@ -462,6 +466,9 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  **/
         public FormValidation doCheckDax_file(@QueryParameter String value)
                 throws IOException, ServletException {
+            if(value == null || value.trim().equals("") )
+               return FormValidation.warning("No file specified.");
+
             File ftmp = new File(value);
             if (!ftmp.exists())
                 return FormValidation.error("Specified file not found.");
@@ -469,6 +476,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 return FormValidation.error("Specified file cannot be read.");
             if (!value.endsWith(".dax"))
                 return FormValidation.warning("The specified file exists, but does not have the expected suffix (.dax).");
+
             return FormValidation.ok();
         }
 
@@ -488,8 +496,12 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  **/
         public FormValidation doCheckAnalysis_id(@QueryParameter String value)
                 throws IOException, ServletException {
+            if(value == null || value.trim().equals("") )
+               return FormValidation.warning("No ID specified.");
+
             if(!value.matches("\\d*"))
                return FormValidation.error("ID is not valid.");
+
             return FormValidation.ok();
         }
 
