@@ -70,19 +70,21 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private boolean genXMLOverview, genXMLCoverage, genXMLAlarmsByOccurence, 
                     genXMLAlarmsByCategory, genXMLAlarmsByFile, genXMLRulechecks,
                     genPreprocessOutput, dropAnalysis;
+    private boolean skip_analysis;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public AstreeBuilder( String dax_file, String analysis_id, String output_dir, 
+    public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
                           boolean genXMLOverview, boolean genXMLCoverage, boolean genXMLAlarmsByOccurence,
                           boolean genXMLAlarmsByCategory, boolean genXMLAlarmsByFile, boolean genXMLRulechecks,
                           boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch
                         ) 
     {
-        this.dax_file     = dax_file;
-        this.analysis_id  = analysis_id;
-        this.output_dir   = output_dir;
-        this.failonswitch = failonswitch;
+        this.dax_file      = dax_file;
+        this.analysis_id   = analysis_id;
+        this.output_dir    = output_dir;
+        this.skip_analysis = skip_analysis;
+        this.failonswitch  = failonswitch;
 
         this.genXMLOverview          = genXMLOverview;
         this.genXMLCoverage          = genXMLCoverage;
@@ -144,6 +146,16 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         return this.failonswitch.getFailon();
     }
 
+    /**
+     * Indicates whether the analysis run is configured to
+     * be temporarily skipped (i.e., no analysis is to be done).
+     *
+     * @return boolean
+     */
+    public boolean isSkip_analysis() {
+    	return this.skip_analysis;
+    }    
+    	
     /**
      * Indicates whether the analysis run is configured to produce the
      * XML overview summary.
@@ -267,6 +279,11 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
         // Analysis run started. ID plugin in Jenkins output.
         listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
+        
+        if(this.skip_analysis) {
+        	listener.getLogger().println("Analysis run has been (temporarily) deactivated. Skipping analysis run.");
+        	return; // nothing to do, exit method.
+        }
 
         // Set some defaults and parameters.
         if(output_dir == null || output_dir.equals(""))

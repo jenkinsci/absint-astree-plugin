@@ -15,6 +15,9 @@
   <f:entry title="Analysis ID" field="analysis_id">
     <f:textbox />
   </f:entry>
+  <f:entry title="Skip Astrée analysis run" field="skip_analysis">
+    <f:checkbox/>
+  </f:entry>
 
 
   <f:entry>
@@ -28,16 +31,6 @@
                          selected="${instance.getFailon() == 'errors'}">
                    Only Errors
                </f:option>
-<!--
-               <f:option value="true-alarms"
-                         selected="${instance.getFailon() == 'true-alarms'}">
-                   Errors and True Alarms
-               </f:option>
-               <f:option value="uncommented-alarms"
-                         selected="${instance.getFailon() == 'uncommented-alarms'}">
-                   Errors and Uncommented Alarms
-               </f:option>
--->
                <f:option value="alarms"
                          selected="${instance.getFailon() == 'alarms'}">
                    Errors and Alarms
