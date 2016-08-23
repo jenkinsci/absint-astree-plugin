@@ -302,7 +302,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
         try {
             Proc proc = launcher.launch( cmd, // command line call to Astree
-                                         build.getEnvVars(), 
+                                         build.getEnvironment(listener), 
                                          listener.getLogger(),
                                          workspace );
             exitCode = proc.join();          // wait for Astree to finish
