@@ -74,8 +74,9 @@ public class AnalysisSummary {
         int numberOfTrueAlarms        = 0;   // not implemented yet
         int numberOfUncommentedAlarms = 0;   // not implemented yet
         try{
-            FileReader     fr = new FileReader( new File(path) );
-            BufferedReader br = new BufferedReader(fr);
+            BufferedReader br = new BufferedReader(
+                                    new InputStreamReader( 
+                                       new FileInputStream(path), "UTF-8" ));
             String line = br.readLine();
             boolean skipping = true;
             while(line != null) {
@@ -101,7 +102,7 @@ public class AnalysisSummary {
                 line = br.readLine();
             }
             br.close();
-        } catch(Exception e) {
+        } catch(IOException e) {
               return null;
         }
         return new AnalysisSummary(numberOfErrors, numberOfAlarms, 

@@ -59,11 +59,11 @@ import java.util.*;
  * @author AbsInt Angewandte Informatik GmbH
  */
 public class AstreeBuilder extends Builder implements SimpleBuildStep {
-    private final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
-    private final String BUILD_NR    = "000001";
+    private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
+    private static final String BUILD_NR    = "000001";
 
-    private final String TMP_REPORT_FILE = "absint_astree_analysis_report.txt";
-    private final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
+    private static final String TMP_REPORT_FILE = "absint_astree_analysis_report.txt";
+    private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
 
     private String dax_file, output_dir, analysis_id;
     private FailonSwitch failonswitch;
@@ -360,15 +360,16 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private void copyText2PrintStream( PrintStream dest, String srcPath ) {
         dest.println("Appending analysis report.");
         try{
-            FileReader     fr = new FileReader( new File(srcPath) );
-            BufferedReader br = new BufferedReader(fr);
+            BufferedReader br = new BufferedReader(
+                                    new InputStreamReader(
+                                       new FileInputStream(srcPath), "UTF-8" ));
             String line = br.readLine() ;
             while(line != null) {
                 dest.println(line);
                 line = br.readLine();
             }
             br.close();
-        } catch(Exception e) {
+        } catch(IOException e) {
         }       
     }   
 
