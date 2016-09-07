@@ -53,9 +53,8 @@
   
   <scm>
     <connection>scm:git:ssh://github.com/jenkinsci/absint-astree-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com:jenkinsci/absint-astree-plugin.git</developerConnection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/absint-astree-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/absint-astree-plugin</url>
-    <tag>absint-astree-1.0.0</tag>
   </scm>
   
 
