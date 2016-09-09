@@ -44,6 +44,9 @@ import org.kohsuke.stapler.QueryParameter;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 /**
  *
@@ -70,20 +73,22 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private boolean genXMLOverview, genXMLCoverage, genXMLAlarmsByOccurence, 
                     genXMLAlarmsByCategory, genXMLAlarmsByFile, genXMLRulechecks,
                     genPreprocessOutput, dropAnalysis;
-    private boolean skip_analysis;
+    private boolean skip_analysis, expand_env_vars;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
+                          boolean expand_env_vars,
                           boolean genXMLOverview, boolean genXMLCoverage, boolean genXMLAlarmsByOccurence,
                           boolean genXMLAlarmsByCategory, boolean genXMLAlarmsByFile, boolean genXMLRulechecks,
                           boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch
                         ) 
     {
-        this.dax_file      = dax_file;
-        this.analysis_id   = analysis_id;
-        this.output_dir    = output_dir;
-        this.skip_analysis = skip_analysis;
+        this.dax_file        = dax_file;
+        this.analysis_id     = analysis_id;
+        this.output_dir      = output_dir;
+        this.skip_analysis   = skip_analysis;
+        this.expand_env_vars = expand_env_vars;
         this.failonswitch  = failonswitch;
 
         this.genXMLOverview          = genXMLOverview;
@@ -155,7 +160,18 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     public boolean isSkip_analysis() {
     	return this.skip_analysis;
     }    
-    	
+   
+    /**
+     * Indicates whether environtment variables are expanded 
+     * to their current values.
+     *
+     * @return boolean
+     */
+    public boolean isExpand_env_vars() {
+        return this.expand_env_vars;
+    }
+    
+ 	
     /**
      * Indicates whether the analysis run is configured to produce the
      * XML overview summary.
@@ -242,7 +258,40 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
      */
 
 
+  /**
+   * Expands environment variables of the form 
+   *       ${VAR_NAME}
+   * by their current value.
+   *
+   * @param cmdln	the java.lang.String, usually a command line, 
+   *                    in which to expand variables
+   * @param envMap	a java.util.Map containing the environment variables 
+   *                    and their current values
+   * @return the input String with environment variables expanded to their current value
+   */
+   private static final String expandEnvironmentVarsHelper(
+                                  String cmdln, Map<String,String> envMap ) {
+      final String pattern = "\\$\\{([A-Za-z_][A-Za-z0-9_]*)\\}";
+      final Pattern expr = Pattern.compile(pattern);
+      Matcher matcher = expr.matcher(cmdln);
+      String  envValue;
+      Pattern subexpr;
+      while (matcher.find()) {
+         envValue = envMap.get(matcher.group(1).toUpperCase());
+         if (envValue == null) {
+            envValue = "";
+         } else {
+           envValue = envValue.replace("\\", "\\\\");
+         }
+         subexpr = Pattern.compile(Pattern.quote(matcher.group(0)));
+         cmdln = subexpr.matcher(cmdln).replaceAll(envValue);
+      } 
+      return cmdln;  
+   }
 
+
+    /**
+      */
     private String constructCommandLineCall(String reportfile, String preprocessoutput ) {
         String cmd = getDescriptor().getAlauncher();
 
@@ -301,6 +350,9 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         int exitCode = -1;
 
         try {
+            if(expand_env_vars)
+                cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
+
             Proc proc = launcher.launch( cmd, // command line call to Astree
                                          build.getEnvironment(listener), 
                                          listener.getLogger(),

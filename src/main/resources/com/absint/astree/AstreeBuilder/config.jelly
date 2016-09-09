@@ -86,6 +86,11 @@
   <f:entry title="Generate text report containing the detailed preprocessing output in project workspace" field="genPreprocessOutput">
     <f:checkbox/>
   </f:entry>
+
+  <f:entry title="Expand environment variables in user settings" field="expand_env_vars">
+    <f:checkbox/>
+  </f:entry>
+
  </f:section>
 
 </j:jelly>
