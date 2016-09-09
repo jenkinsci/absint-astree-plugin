@@ -435,7 +435,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 throws IOException, ServletException {
             if(value == null || value.trim().equals("") )
                 return FormValidation.error("Please set a valid server of form <hostname>:<port>");
-            if (!value.matches("[a-zA-Z_0-9]+:\\d{1,5}"))
+            if (!value.matches("[a-zA-Z][a-zA-Z0-9\\.\\-]{0,22}[a-zA-Z0-9]:\\d{1,5}"))
                 return FormValidation.warning("The Astrée Server needs to be specified as a hostname followed by a colon followed by a port number.");
             return FormValidation.ok();
         }
