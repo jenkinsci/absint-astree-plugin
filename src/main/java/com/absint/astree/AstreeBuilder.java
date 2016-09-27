@@ -63,7 +63,7 @@ import java.util.regex.Matcher;
  */
 public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
-    private static final String BUILD_NR    = "000001";
+    private static final String BUILD_NR    = "16.10_01";
 
     private static final String TMP_REPORT_FILE = "absint_astree_analysis_report.txt";
     private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
@@ -326,30 +326,37 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
-        // Analysis run started. ID plugin in Jenkins output.
-        listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
-        
-        if(this.skip_analysis) {
-        	listener.getLogger().println("Analysis run has been (temporarily) deactivated. Skipping analysis run.");
-        	return; // nothing to do, exit method.
-        }
-
+        int exitCode = -1;
         // Set some defaults and parameters.
         if(output_dir == null || output_dir.equals(""))
             output_dir = workspace.toString();
         String reportfile = workspace.toString() + "/" + TMP_REPORT_FILE;
 
-        // Print some configuration info.
-        if(failonswitch != null) 
-            listener.getLogger().println( "Astrée fails build on " + failonswitch.getFailon() );        
-        listener.getLogger().println( "Summary reports will be generated in " + output_dir );
-
-
-        String cmd = this.constructCommandLineCall( reportfile,
-                                                    workspace.toString() + "/" + TMP_PREPROCESS_OUTPUT  );
-        int exitCode = -1;
-
         try {
+            // Analysis run started. ID plugin in Jenkins output.
+            listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
+        
+            if(this.skip_analysis) {
+        	listener.getLogger().println("Analysis run has been (temporarily) deactivated. Skipping analysis run.");
+        	return; // nothing to do, exit method.
+            }
+
+            // Print some configuration info.
+            if(failonswitch != null) 
+                listener.getLogger().println( "Astrée fails build on " + failonswitch.getFailon() );        
+        
+            String infoStringSummaryDest = "Summary reports will be generated in " + output_dir;
+            if(expand_env_vars)
+               infoStringSummaryDest =  expandEnvironmentVarsHelper(
+                                               "Summary reports will be generated in " + output_dir, 
+                                               build.getEnvironment(listener) ); 
+            listener.getLogger().println(infoStringSummaryDest);
+
+
+            String cmd = this.constructCommandLineCall( reportfile,
+                                                    workspace.toString() + "/" + TMP_PREPROCESS_OUTPUT  );
+            
+
             if(expand_env_vars)
                 cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
 
