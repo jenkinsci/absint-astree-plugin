@@ -527,6 +527,24 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         }
 
 
+
+/**
+ * Helper method to check whether a string contains an environment variable of form
+ * <br><tt>${IDENTIFIER}</tt><br>
+ *
+ * @param   s    String to scan for environment variable expressions
+ * @return  Outcome of the check as a boolean (true if such an expression
+ *          was found, otherwise false).
+ */
+       public static final boolean containsEnvVars(String s)
+       {
+           final String pattern = "\\$\\{([A-Za-z_][A-Za-z0-9_]*)\\}";
+           final Pattern expr = Pattern.compile(pattern);
+           Matcher matcher = expr.matcher(s);
+           return matcher.find();
+       } 
+
+
 /**
  * Performs on-the-fly validation of the form field 'dax_file'.
  *
@@ -545,6 +563,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 throws IOException, ServletException {
             if(value == null || value.trim().equals("") )
                return FormValidation.warning("No file specified.");
+
+            if(containsEnvVars(value)) {
+               return FormValidation.warning("The specified path contains an environment variable, please make sure that the expansion of environment variables is activated and the constructed paths are correct.");
+            }
 
             File ftmp = new File(value);
             if (!ftmp.exists())
@@ -576,8 +598,47 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             if(value == null || value.trim().equals("") )
                return FormValidation.warning("No ID specified.");
 
+            if(containsEnvVars(value)) {
+               return FormValidation.warning("The ID contains an environment variable, please make sure that the expansion of environment variables is activated and the constructed IDs are valid.");
+            }
+
+
             if(!value.matches("\\d*"))
                return FormValidation.error("ID is not valid.");
+
+            return FormValidation.ok();
+        }
+
+/**
+ * Performs on-the-fly validation of the form field 'output_dir'.
+ *
+ * @param value
+ *      This parameter receives the value that the user has typed.
+ * @return
+ *      Indicates the outcome of the validation. This is sent to the browser.
+ *      <br>
+ *      Note that returning {@link FormValidation#error(String)} does not
+ *      prevent the form from being saved. It just means that a message
+ *      will be displayed to the user. 
+ * @throws IOException               as super class
+ * @throws ServletException          as super class
+ **/
+        public FormValidation doCheckOutput_dir(@QueryParameter String value)
+                throws IOException, ServletException {
+            if(value == null || value.trim().equals("") )
+               return FormValidation.warning("No directory specified.");
+
+            if(containsEnvVars(value)) {
+               return FormValidation.warning("The specified path contains an environment variable, please make sure that the expansion of environment variables is activated and the constructed paths are correct.");
+            }
+
+            File ftmp = new File(value);
+            if (!ftmp.exists())
+                return FormValidation.error("Specified directory not found.");
+            if (!ftmp.isDirectory())
+                return FormValidation.error("Specified path is no directory.");
+            if (!ftmp.canRead() || !ftmp.canWrite())
+                return FormValidation.warning("No permissions to read/write the specified directory.");
 
             return FormValidation.ok();
         }
