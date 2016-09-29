@@ -73,12 +73,11 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private boolean genXMLOverview, genXMLCoverage, genXMLAlarmsByOccurence, 
                     genXMLAlarmsByCategory, genXMLAlarmsByFile, genXMLRulechecks,
                     genPreprocessOutput, dropAnalysis;
-    private boolean skip_analysis, expand_env_vars;
+    private boolean skip_analysis;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
-                          boolean expand_env_vars,
                           boolean genXMLOverview, boolean genXMLCoverage, boolean genXMLAlarmsByOccurence,
                           boolean genXMLAlarmsByCategory, boolean genXMLAlarmsByFile, boolean genXMLRulechecks,
                           boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch
@@ -88,7 +87,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         this.analysis_id     = analysis_id;
         this.output_dir      = output_dir;
         this.skip_analysis   = skip_analysis;
-        this.expand_env_vars = expand_env_vars;
         this.failonswitch  = failonswitch;
 
         this.genXMLOverview          = genXMLOverview;
@@ -160,17 +158,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     public boolean isSkip_analysis() {
     	return this.skip_analysis;
     }    
-   
-    /**
-     * Indicates whether environtment variables are expanded 
-     * to their current values.
-     *
-     * @return boolean
-     */
-    public boolean isExpand_env_vars() {
-        return this.expand_env_vars;
-    }
-    
  	
     /**
      * Indicates whether the analysis run is configured to produce the
@@ -346,8 +333,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 listener.getLogger().println( "Astrée fails build on " + failonswitch.getFailon() );        
         
             String infoStringSummaryDest = "Summary reports will be generated in " + output_dir;
-            if(expand_env_vars)
-               infoStringSummaryDest =  expandEnvironmentVarsHelper(
+            infoStringSummaryDest =  expandEnvironmentVarsHelper(
                                                "Summary reports will be generated in " + output_dir, 
                                                build.getEnvironment(listener) ); 
             listener.getLogger().println(infoStringSummaryDest);
@@ -357,8 +343,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                                                     workspace.toString() + "/" + TMP_PREPROCESS_OUTPUT  );
             
 
-            if(expand_env_vars)
-                cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
+            cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
 
             Proc proc = launcher.launch( cmd, // command line call to Astree
                                          build.getEnvironment(listener), 
