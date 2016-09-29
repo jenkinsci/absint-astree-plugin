@@ -35,9 +35,9 @@
                          selected="${instance.getFailon() == 'alarms'}">
                    Errors and Alarms
                </f:option>
-               <f:option value="data-flow-anomalies"
-                         selected="${instance.getFailon() == 'data-flow-anomalies'}">
-                   Errors, Alarms, and Data-Flow Anomalies
+               <f:option value="flow-anomalies"
+                         selected="${instance.getFailon() == 'flow-anomalies'}">
+                   Errors, Alarms, and Flow Anomalies
                </f:option>
 
            </select>

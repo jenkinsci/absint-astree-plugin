@@ -40,7 +40,7 @@ public class AnalysisSummary {
 
     private int numberOfErrors;
     private int numberOfAlarms;
-    private int numberOfDataflowAnomalies;
+    private int numberOfFlowAnomalies;
     private int numberOfRuleViolations;
     private int numberOfTrueAlarms;           // not implemented yet
     private int numberOfUncommentedAlarms;    // not implemented yet
@@ -49,11 +49,11 @@ public class AnalysisSummary {
  * Private constructor.
  */
     private AnalysisSummary(int numberOfErrors, int numberOfAlarms, 
-                            int numberOfDataflowAnomalies, int numberOfRuleViolations,
+                            int numberOfFlowAnomalies, int numberOfRuleViolations,
                             int numberOfTrueAlarms, int numberOfUncommentedAlarms ) {
         this.numberOfErrors = numberOfErrors;
         this.numberOfAlarms = numberOfAlarms;
-        this.numberOfDataflowAnomalies = numberOfDataflowAnomalies;
+        this.numberOfFlowAnomalies = numberOfFlowAnomalies;
         this.numberOfRuleViolations    = numberOfRuleViolations;
         this.numberOfTrueAlarms        = numberOfTrueAlarms;
         this.numberOfUncommentedAlarms = numberOfUncommentedAlarms;
@@ -69,7 +69,7 @@ public class AnalysisSummary {
     static public AnalysisSummary readFromReportFile(String path) {
         int numberOfErrors = 0;
         int numberOfAlarms = 0;
-        int numberOfDataflowAnomalies = 0;
+        int numberOfFlowAnomalies     = 0;
         int numberOfRuleViolations    = 0;
         int numberOfTrueAlarms        = 0;   // not implemented yet
         int numberOfUncommentedAlarms = 0;   // not implemented yet
@@ -87,8 +87,8 @@ public class AnalysisSummary {
                     else if(line.trim().startsWith("Run-time errors:"))
                         numberOfAlarms = Integer.parseInt(
                                              line.substring(line.indexOf(":") + 1, line.length()).trim());
-                    else if(line.trim().startsWith("Data flow anomalies:"))
-                        numberOfDataflowAnomalies = Integer.parseInt(
+                    else if(line.trim().startsWith("Flow anomalies:"))
+                        numberOfFlowAnomalies = Integer.parseInt(
                                              line.substring(line.indexOf(":") + 1, line.length()).trim());
                     else if(line.trim().startsWith("Rule violations:"))
                         numberOfRuleViolations = Integer.parseInt(
@@ -106,7 +106,7 @@ public class AnalysisSummary {
               return null;
         }
         return new AnalysisSummary(numberOfErrors, numberOfAlarms, 
-                                   numberOfDataflowAnomalies, numberOfRuleViolations,
+                                   numberOfFlowAnomalies, numberOfRuleViolations,
                                    numberOfTrueAlarms, numberOfUncommentedAlarms );
     }
 
@@ -134,12 +134,12 @@ public class AnalysisSummary {
     }
 
 /**
- * Returns the number of reported data-flow anaomalies ("Type D alarms").
+ * Returns the number of reported flow anaomalies ("Type D alarms").
  *
  * @return int
  */ 
-    public int getNumberOfDataflowAnomalies() {
-        return this.numberOfDataflowAnomalies;
+    public int getNumberOfFlowAnomalies() {
+        return this.numberOfFlowAnomalies;
     }
 
 /**

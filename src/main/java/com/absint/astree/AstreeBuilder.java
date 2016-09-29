@@ -63,7 +63,7 @@ import java.util.regex.Matcher;
  */
 public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
-    private static final String BUILD_NR    = "16.10_01";
+    private static final String BUILD_NR    = "16.10_02";
 
     private static final String TMP_REPORT_FILE = "absint_astree_analysis_report.txt";
     private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
@@ -380,8 +380,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
                     build.setResult(hudson.model.Result.FAILURE);
                 }
-                else if(     failonswitch != null && failonswitch.failOnDataflowAnomalies()
-                          && (   summary.getNumberOfDataflowAnomalies() 
+                else if(     failonswitch != null && failonswitch.failOnFlowAnomalies()
+                          && (   summary.getNumberOfFlowAnomalies() 
                                + summary.getNumberOfAlarms() > 0) ) {
                     build.setResult(hudson.model.Result.FAILURE);
                 }

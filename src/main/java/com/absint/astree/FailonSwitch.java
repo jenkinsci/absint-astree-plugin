@@ -38,7 +38,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
  *   <li>errors and alarms classified as true code defects by the user</li>
  *   <li>errors and alarms uncommented by the user</li>
  *   <li>errors and alarms</li>
- *   <li>errors, alarms, and data-flow anomalies</li>
+ *   <li>errors, alarms, and flow anomalies</li>
  * </ul>
  *
  * @author AbsInt Angewandte Informatik GmbH
@@ -58,7 +58,7 @@ public class FailonSwitch {
  *   <li>true-alarms</li>
  *   <li>uncommented-alarms</li>
  *   <li>alarms</li>
- *   <li>data-flow-anomalies</li>
+ *   <li>flow-anomalies</li>
  * </ul>
 */
     private String failon;    
@@ -83,7 +83,7 @@ public class FailonSwitch {
  *   <li>true-alarms</li>
  *   <li>uncommented-alarms</li>
  *   <li>alarms</li>
- *   <li>data-flow-anomalies</li>
+ *   <li>flow-anomalies</li>
  * </ul>
  *
  * @return java.lang.String
@@ -151,14 +151,14 @@ public class FailonSwitch {
 
 /**
  * Determines whether the configuration is set to fail a build
- * in case a data-flow anomaly ("Type D alarm") is reported.
+ * in case a flow anomaly ("Type D alarm") is reported.
  *
  *
  * @return boolean
  */
-    public boolean failOnDataflowAnomalies() {
+    public boolean failOnFlowAnomalies() {
         if(failon == null)
             return false;
-        return this.failon.equals("data-flow-anomalies");
+        return this.failon.equals("flow-anomalies");
     }
 }
