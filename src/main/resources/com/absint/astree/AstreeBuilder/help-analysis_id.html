@@ -3,4 +3,7 @@
    The analysis, as configured via the supported DAX file, of a build is imported as a new revision into the project with this ID on the server, if such a project exists. 
    The new revision will become a child revision of the last existing revision. 
    If no project with this ID exists on the server, the analysis will become the first revision of a new project with the specified ID.
+   <br>
+   Note: In this setting, environment variables can be expanded.
+   Expansion will affect all occurrences of the pattern &#36;{name} where name is a valid environment variable name consisting solely of underscores, digits, and alphabetics from the portable character set and where the first character is not a digit.
 </div>
