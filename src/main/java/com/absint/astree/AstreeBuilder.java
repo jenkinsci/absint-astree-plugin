@@ -550,7 +550,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                return FormValidation.warning("No file specified.");
 
             if(containsEnvVars(value)) {
-               return FormValidation.warning("The specified path contains an environment variable, please make sure that the expansion of environment variables is activated and the constructed paths are correct.");
+               return FormValidation.warning("The specified path contains an environment variable, please make sure the constructed paths are correct.");
             }
 
             File ftmp = new File(value);
@@ -584,7 +584,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                return FormValidation.warning("No ID specified.");
 
             if(containsEnvVars(value)) {
-               return FormValidation.warning("The ID contains an environment variable, please make sure that the expansion of environment variables is activated and the constructed IDs are valid.");
+               return FormValidation.warning("The ID contains an environment variable, please make sure that the constructed IDs are valid.");
             }
 
 
@@ -614,7 +614,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                return FormValidation.warning("No directory specified.");
 
             if(containsEnvVars(value)) {
-               return FormValidation.warning("The specified path contains an environment variable, please make sure that the expansion of environment variables is activated and the constructed paths are correct.");
+               return FormValidation.warning("The specified path contains an environment variable, please make sure that the constructed paths are correct.");
             }
 
             File ftmp = new File(value);
