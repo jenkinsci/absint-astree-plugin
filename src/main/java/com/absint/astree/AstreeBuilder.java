@@ -65,7 +65,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
     private static final String BUILD_NR    = "16.10_02";
 
-    private static final String TMP_REPORT_FILE = "absint_astree_analysis_report.txt";
+    private static final String TMP_REPORT_FILE = "absint_astree_analysis_report";
     private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
 
     private String dax_file, output_dir, analysis_id;
@@ -288,7 +288,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                         (" --id " + this.analysis_id) : "" )                       +
                      ((this.dax_file != null && !this.dax_file.trim().equals("") )      ?
                         (" --import \"" + this.dax_file + "\"") : "")              +
-                     " --report-file " + "\"" + reportfile + "\"";
+                     " --report-file " + "\"" + reportfile + ".txt\"" +
+                     " --xml-result-file " + "\"" + reportfile + ".xml\"";
 
         if(this.genXMLOverview)
                 cmd += " --report-overview " + "\"" + output_dir + "/Overview.xml\"";
@@ -363,10 +364,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
          }
          if(exitCode == 0) { // activities after successful analysis run
                 // append analysis report/output to Jenkins output
-		copyText2PrintStream(listener.getLogger(), reportfile);
+		copyText2PrintStream(listener.getLogger(), reportfile + ".txt");
                 /* Read analysis summary and 
                    check whether Astrée shall fail the build due to reported errors etc */
-                AnalysisSummary summary = AnalysisSummary.readFromReportFile(reportfile);
+                AnalysisSummary summary = AnalysisSummary.readFromReportFile(reportfile + ".txt");
                 if(      failonswitch != null && failonswitch.failOnErrors() 
                       && summary.getNumberOfErrors() > 0) {
                     listener.getLogger().println( "Errors reported! Number of errors: " + 
