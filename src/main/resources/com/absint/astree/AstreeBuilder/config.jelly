@@ -49,7 +49,7 @@
 
   </f:section>
 
-  <f:section title="Summary Reports">
+  <f:section title="Summary Reports (for release 16.10 and older)">
     <f:advanced>
       <f:block>
   <f:entry title="Base Directory for Summaries" field="output_dir">
