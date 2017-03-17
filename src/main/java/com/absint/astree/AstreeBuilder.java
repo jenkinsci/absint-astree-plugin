@@ -75,6 +75,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                     genPreprocessOutput, dropAnalysis;
     private boolean skip_analysis;
 
+    private boolean reps1610;
+
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
@@ -89,6 +91,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         this.skip_analysis   = skip_analysis;
         this.failonswitch  = failonswitch;
 
+        this.reps1610      = reps1610;
+
         this.genXMLOverview          = genXMLOverview;
         this.genXMLCoverage          = genXMLCoverage;
         this.genXMLAlarmsByOccurence = genXMLAlarmsByOccurence;
@@ -99,7 +103,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         this.dropAnalysis            = dropAnalysis;
         this.genPreprocessOutput     = genPreprocessOutput;
     }
-
 
     /*
      * Interface to <tt>config.jelly</tt>.
@@ -283,7 +286,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         String cmd    = getDescriptor().getAlauncher();
         boolean c1610 = getDescriptor().getComp1610();
 
-        cmd = cmd  + " " + (c1610 ? "-a" : "") + "-b -s "                        +
+        cmd = cmd  + " " + (c1610 ? "-a " : "") + "-b -s "                        +
                      getDescriptor().getAstree_server()  + " "                     +
                      ((this.analysis_id != null && !this.analysis_id.trim().equals("")) ?
                         (" --id " + this.analysis_id) : "" )                       +
@@ -291,23 +294,26 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                         (" --import \"" + this.dax_file + "\"") : "")              +
                      " --report-file " + "\"" + reportfile + ".txt\"" +
                      " --xml-result-file " + "\"" + reportfile + ".xml\"";
-
-        if(this.genXMLOverview && c1610)
-                cmd += " --report-overview " + "\"" + output_dir + "/Overview.xml\"";
-        if(this.genXMLCoverage && c1610)
-                cmd += " --report-coverage " + "\"" + output_dir + "/Coverage.xml\"";
-        if(this.genXMLAlarmsByOccurence && c1610)
-                cmd += " --report-alarmsByOccurence " + "\"" + output_dir + "/AlarmsByOccurence.xml\"";
-        if(this.genXMLAlarmsByCategory && c1610)
-                cmd += " --report-alarmsByCategory " + "\"" + output_dir + "/AlarmsByCategory.xml\"";
-        if(this.genXMLAlarmsByFile && c1610)
-                cmd += " --report-alarmsByFile " + "\"" + output_dir + "/AlarmsByFile.xml\"";
-        if(this.genXMLRulechecks && c1610)
-                cmd += " --report-rulechecks " + "\"" + output_dir + "/Rulechecks.xml\"";
         if(this.genPreprocessOutput)
-                cmd += " --preprocess-report-file " + "\"" + preprocessoutput + "\""; 
+                cmd += " --preprocess-report-file " + "\"" + preprocessoutput + "\"";
         if(this.dropAnalysis)
                 cmd += " --drop";
+
+        if(!c1610)
+            return cmd;
+
+        if(this.genXMLOverview)
+                cmd += " --report-overview " + "\"" + output_dir + "/Overview.xml\"";
+        if(this.genXMLCoverage)
+                cmd += " --report-coverage " + "\"" + output_dir + "/Coverage.xml\"";
+        if(this.genXMLAlarmsByOccurence)
+                cmd += " --report-alarmsByOccurence " + "\"" + output_dir + "/AlarmsByOccurence.xml\"";
+        if(this.genXMLAlarmsByCategory)
+                cmd += " --report-alarmsByCategory " + "\"" + output_dir + "/AlarmsByCategory.xml\"";
+        if(this.genXMLAlarmsByFile)
+                cmd += " --report-alarmsByFile " + "\"" + output_dir + "/AlarmsByFile.xml\"";
+        if(this.genXMLRulechecks)
+                cmd += " --report-rulechecks " + "\"" + output_dir + "/Rulechecks.xml\"";
 
         return cmd; 
     }

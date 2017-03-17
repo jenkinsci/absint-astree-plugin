@@ -52,28 +52,28 @@
   <f:section title="Summary Reports (for release 16.10 and older)">
     <f:advanced>
       <f:block>
-  <f:entry title="Base Directory for Summaries" field="output_dir">
-    <f:textbox />
-  </f:entry>
-  <f:entry title="Summaries to generate:"/>
-    <f:entry title="Overview Report" field="genXMLOverview">
-     <f:checkbox/>
-    </f:entry>
-    <f:entry title="Coverage Report" field="genXMLCoverage">
-     <f:checkbox/>
-    </f:entry>
-    <f:entry title="Alarms by Occurence" field="genXMLAlarmsByOccurence">
-     <f:checkbox/>
-    </f:entry>
-    <f:entry title="Alarms by Category" field="genXMLAlarmsByCategory">
-     <f:checkbox/>
-    </f:entry>
-    <f:entry title="Alarms by File" field="genXMLAlarmsByFile">
-     <f:checkbox/>
-    </f:entry>
-    <f:entry title="Rulechecker report" field="genXMLRulechecks">
-     <f:checkbox/>
-    </f:entry>
+         <f:entry title="Base Directory for Summaries" field="output_dir">
+            <f:textbox />
+         </f:entry>
+         <f:entry title="Summaries to generate:"/>
+         <f:entry title="Overview Report" field="genXMLOverview">
+           <f:checkbox/>
+         </f:entry>
+         <f:entry title="Coverage Report" field="genXMLCoverage">
+           <f:checkbox/>
+         </f:entry>
+         <f:entry title="Alarms by Occurence" field="genXMLAlarmsByOccurence">
+           <f:checkbox/>
+         </f:entry>
+         <f:entry title="Alarms by Category" field="genXMLAlarmsByCategory">
+           <f:checkbox/>
+         </f:entry>
+         <f:entry title="Alarms by File" field="genXMLAlarmsByFile">
+           <f:checkbox/>
+         </f:entry>
+         <f:entry title="Rulechecker report" field="genXMLRulechecks">
+           <f:checkbox/>
+         </f:entry>
       </f:block>
     </f:advanced>
   </f:section>
