@@ -75,8 +75,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                     genPreprocessOutput, dropAnalysis;
     private boolean skip_analysis;
 
-    private boolean reps1610;
-
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
@@ -90,8 +88,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         this.output_dir      = output_dir;
         this.skip_analysis   = skip_analysis;
         this.failonswitch  = failonswitch;
-
-        this.reps1610      = reps1610;
 
         this.genXMLOverview          = genXMLOverview;
         this.genXMLCoverage          = genXMLCoverage;
