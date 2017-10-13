@@ -323,7 +323,14 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             output_dir = workspace.toString();
         String reportfile = workspace.toString() + "/" + TMP_REPORT_FILE;
 
+        File rfile;
         try {
+            // Clear log file
+            rfile = new java.io.File(reportfile + ".txt");
+            rfile.delete();
+            rfile.createNewFile();
+            // Create log file reader thread
+            StatusPoller sp = new StatusPoller(1000, listener, rfile);
             // Analysis run started. ID plugin in Jenkins output.
             listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
         
@@ -348,12 +355,14 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             
 
             cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
-
-            Proc proc = launcher.launch( cmd, // command line call to Astree
+            sp.start();                       // Start log file reader
+            Proc proc = launcher.launch( cmd, // Command line call to Astree
                                          build.getEnvironment(listener), 
                                          listener.getLogger(),
                                          workspace );
-            exitCode = proc.join();          // wait for Astree to finish
+            exitCode = proc.join();           // Wait for Astree to finish
+            sp.kill();                        // Stop log file reader
+            sp.join();                        // Wait for log file reader to finish
             if(exitCode == 0)
                 listener.getLogger().println("Analysis run succeeded.");
             else 
@@ -366,8 +375,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             listener.getLogger().println("InterruptedException caught during analysis run.");
          }
          if(exitCode == 0) { // activities after successful analysis run
-                // append analysis report/output to Jenkins output
-		copyText2PrintStream(listener.getLogger(), reportfile + ".txt");
                 /* Read analysis summary and 
                    check whether Astrée shall fail the build due to reported errors etc */
                 AnalysisSummary summary = AnalysisSummary.readFromReportFile(reportfile + ".txt");
