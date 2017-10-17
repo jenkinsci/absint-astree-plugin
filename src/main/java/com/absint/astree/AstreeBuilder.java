@@ -75,6 +75,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                     genPreprocessOutput, dropAnalysis;
     private boolean skip_analysis;
 
+    private Proc proc; // reference to an associated a3c client process 
+
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
@@ -356,10 +358,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
             cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
             sp.start();                       // Start log file reader
-            Proc proc = launcher.launch( cmd, // Command line call to Astree
-                                         build.getEnvironment(listener), 
-                                         listener.getLogger(),
-                                         workspace );
+            proc = launcher.launch( cmd, // Command line call to Astree
+                                    build.getEnvironment(listener), 
+                                    listener.getLogger(),
+                                    workspace );
             exitCode = proc.join();           // Wait for Astree to finish
             sp.kill();                        // Stop log file reader
             sp.join();                        // Wait for log file reader to finish
@@ -400,6 +402,18 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 // If Astrée cannot be invoked, conservatively fail the build...   
                 build.setResult(hudson.model.Result.FAILURE);
          }
+    }
+    
+    /**
+     * Override finalize method to ensure existing a3c client processes are killed upon destruction
+     * of AstreeBuilder objects.
+     */
+    protected void finalize() {
+        try {
+           if(proc != null)
+              proc.kill();
+        } catch(Exception e) {
+        }
     }
 
     // Overridden for better type safety.
@@ -510,7 +524,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  * @throws IOException             as super class
  * @throws ServletException        as super class
  **/
-        public FormValidation doCheckAlauncher(@QueryParameter String value)
+        public FormValidation doCheckAlauncher(@QueryParameter String value, AbstractProject project)
                 throws IOException, ServletException {
             if(value == null || value.trim().equals("") )
                return FormValidation.error("No file specified.");
@@ -518,9 +532,27 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             File ftmp = new File(value);
             if (!ftmp.exists())
                 return FormValidation.error("Specified file not found.");
+            if(!ftmp.isFile())
+                return FormValidation.error("Specified file is not a normal file.");
             if (!ftmp.canExecute())
                 return FormValidation.error("Specified file cannot be executed.");
-
+            try {
+                String line;
+                String ret = "";
+                Process p = Runtime.getRuntime().exec(value + " -b c --version-file v.info");
+                p.waitFor();
+                BufferedReader input = new BufferedReader(
+                                         new InputStreamReader(
+                                          new FileInputStream("v.info"), "UTF-8" ));
+                while ((line = input.readLine()) != null) {
+                   ret = ret + "\n" + line;
+                }
+                input.close();
+                return FormValidation.ok(ret + "\n\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException ie) {
+            }
             return FormValidation.ok();
         }
 

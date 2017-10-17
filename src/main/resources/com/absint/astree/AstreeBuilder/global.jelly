@@ -13,8 +13,8 @@
     so it should be straightforward to find them.
   -->
   <f:section title="Astrée configuration">
-    <f:entry title="AbsInt Launcher Program" field="alauncher"
-      description="Specify the path to your local AbsInt Launcher (alauncher)">
+    <f:entry title="a³ for C Client" field="alauncher"
+      description="Specify the path to your local a³ for C client (a3c)">
       <f:textbox />
     </f:entry>
     <f:entry title="Run in compatibility mode with release 16.10" field="comp1610">
