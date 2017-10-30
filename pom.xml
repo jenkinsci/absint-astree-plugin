@@ -12,7 +12,7 @@
 
 
   <artifactId>absint-astree</artifactId>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>1.0.4</version>
   <packaging>hpi</packaging>
 
   <properties>
@@ -54,7 +54,7 @@
     <connection>scm:git:https://github.com/jenkinsci/absint-astree-plugin.git</connection>
     <developerConnection>scm:git:https://github.com/jenkinsci/absint-astree-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/absint-astree-plugin</url>
-    <tag>HEAD</tag>
+    <tag>absint-astree-1.0.4</tag>
   </scm>
   
 
