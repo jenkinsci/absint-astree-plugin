@@ -63,7 +63,7 @@ import java.util.regex.Matcher;
  */
 public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
-    private static final String BUILD_NR    = "16.10_02";
+    private static final String BUILD_NR    = "17.10";
 
     private static final String TMP_REPORT_FILE = "absint_astree_analysis_report";
     private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
@@ -327,14 +327,16 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
         File rfile;
         try {
+           // Analysis run started. ID plugin in Jenkins output.
+            listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
             // Clear log file
             rfile = new java.io.File(reportfile + ".txt");
-            rfile.delete();
-            rfile.createNewFile();
+            if( rfile.delete() )
+               listener.getLogger().println("Old log file erased.");
+            if( rfile.createNewFile() )
+               listener.getLogger().println("New log file created.");
             // Create log file reader thread
             StatusPoller sp = new StatusPoller(1000, listener, rfile);
-            // Analysis run started. ID plugin in Jenkins output.
-            listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
         
             if(this.skip_analysis) {
         	listener.getLogger().println("Analysis run has been (temporarily) deactivated. Skipping analysis run.");
@@ -538,17 +540,18 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 return FormValidation.error("Specified file cannot be executed.");
             try {
                 String line;
-                String ret = "";
+                StringBuffer ret = new StringBuffer();
                 Process p = Runtime.getRuntime().exec(value + " -b c --version-file v.info");
                 p.waitFor();
                 BufferedReader input = new BufferedReader(
                                          new InputStreamReader(
                                           new FileInputStream("v.info"), "UTF-8" ));
                 while ((line = input.readLine()) != null) {
-                   ret = ret + "\n" + line;
+                   ret.append("\n");
+                   ret.append(line);
                 }
                 input.close();
-                return FormValidation.ok(ret + "\n\n");
+                return FormValidation.ok(ret.toString() + "\n\n");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException ie) {
