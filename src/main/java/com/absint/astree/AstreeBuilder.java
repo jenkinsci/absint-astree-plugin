@@ -255,10 +255,11 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
    *                    in which to expand variables
    * @param envMap	a java.util.Map containing the environment variables 
    *                    and their current values
+   * @param isUnix      boolean
    * @return the input String with environment variables expanded to their current value
    */
    private static final String expandEnvironmentVarsHelper(
-                                  String cmdln, Map<String,String> envMap ) {
+                                  String cmdln, Map<String, String> envMap, boolean isUnix ) {
       final String pattern = "\\$\\{([A-Za-z_][A-Za-z0-9_]*)\\}";
       final Pattern expr = Pattern.compile(pattern);
       Matcher matcher = expr.matcher(cmdln);
@@ -273,8 +274,13 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
          }
          subexpr = Pattern.compile(Pattern.quote(matcher.group(0)));
          cmdln = subexpr.matcher(cmdln).replaceAll(envValue);
+      }
+
+      if(isUnix) {
+         return cmdln.replace('\\','/');
+      } else {
+         return cmdln.replace('/','\\');
       } 
-      return cmdln;  
    }
 
 
@@ -323,7 +329,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         // Set some defaults and parameters.
         if(output_dir == null || output_dir.equals(""))
             output_dir = workspace.toString();
-        String reportfile = workspace.toString() + "/" + TMP_REPORT_FILE;
+        String reportfile = workspace.toString() + (launcher.isUnix() ? "/" : "\\") + TMP_REPORT_FILE;
 
         File rfile;
         try {
@@ -350,7 +356,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             String infoStringSummaryDest = "Summary reports will be generated in " + output_dir;
             infoStringSummaryDest =  expandEnvironmentVarsHelper(
                                                "Summary reports will be generated in " + output_dir, 
-                                               build.getEnvironment(listener) ); 
+                                               build.getEnvironment(listener),
+                                               launcher.isUnix()); 
             listener.getLogger().println(infoStringSummaryDest);
 
 
@@ -358,7 +365,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                                                     workspace.toString() + "/" + TMP_PREPROCESS_OUTPUT  );
             
 
-            cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener));
+            cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener), launcher.isUnix());
             sp.start();                       // Start log file reader
             proc = launcher.launch( cmd, // Command line call to Astree
                                     build.getEnvironment(listener), 
