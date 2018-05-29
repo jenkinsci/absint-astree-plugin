@@ -545,24 +545,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 return FormValidation.error("Specified file is not a normal file.");
             if (!ftmp.canExecute())
                 return FormValidation.error("Specified file cannot be executed.");
-            try {
-                String line;
-                StringBuffer ret = new StringBuffer();
-                Process p = Runtime.getRuntime().exec(value + " -b c --version-file v.info");
-                p.waitFor();
-                BufferedReader input = new BufferedReader(
-                                         new InputStreamReader(
-                                          new FileInputStream("v.info"), "UTF-8" ));
-                while ((line = input.readLine()) != null) {
-                   ret.append("\n");
-                   ret.append(line);
-                }
-                input.close();
-                return FormValidation.ok(ret.toString() + "\n\n");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException ie) {
-            }
             return FormValidation.ok();
         }
 
