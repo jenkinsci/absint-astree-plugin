@@ -43,8 +43,8 @@ class StatusPoller extends Thread {
    private long    interval;
    private boolean    alive;
 
-   private TaskListener listener;
-   private File log;
+   private TaskListener    listener;
+   private hudson.FilePath log;
 
 
   /**
@@ -54,7 +54,7 @@ class StatusPoller extends Thread {
    * @param listener    TaskListener to provide access to Jenkins console via getLogger()
    * @param log         input file (log to copy to console)
    */
-   StatusPoller(long interval, TaskListener listener, File log) {
+   StatusPoller(long interval, TaskListener listener, hudson.FilePath log) {
        this.alive    = true;
        this.interval = interval;
        this.listener = listener;
@@ -74,7 +74,7 @@ class StatusPoller extends Thread {
             active = false;
          try {
           this.sleep(interval);
-          fileHandler = new RandomAccessFile(log, "r");
+          fileHandler = new RandomAccessFile(new java.io.File(log.getRemote()), "r");
           if(fileHandler.length() == 0) continue; // no output there, yet
           cpos        = fileHandler.length() - 1;
           sb = new StringBuilder();

@@ -63,7 +63,7 @@ import java.util.regex.Matcher;
  */
 public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
-    private static final String BUILD_NR    = "17.10";
+    private static final String BUILD_NR    = "18.10";
 
     private static final String TMP_REPORT_FILE = "absint_astree_analysis_report";
     private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
@@ -331,16 +331,16 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             output_dir = workspace.toString();
         String reportfile = workspace.toString() + (launcher.isUnix() ? "/" : "\\") + TMP_REPORT_FILE;
 
-        File rfile;
+        FilePath rfile;
         try {
            // Analysis run started. ID plugin in Jenkins output.
             listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
             // Clear log file
-            rfile = new java.io.File(reportfile + ".txt");
+            rfile = new FilePath(workspace, TMP_REPORT_FILE + ".txt");
             if( rfile.delete() )
                listener.getLogger().println("Old log file erased.");
-            if( rfile.createNewFile() )
-               listener.getLogger().println("New log file created.");
+            rfile.touch(System.currentTimeMillis());
+            listener.getLogger().println("New log file created.");
             // Create log file reader thread
             StatusPoller sp = new StatusPoller(1000, listener, rfile);
         
