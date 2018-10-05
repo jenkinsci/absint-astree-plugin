@@ -38,7 +38,9 @@ import java.io.*;
  */
 class StatusPoller extends Thread {
 
-   static private long INITIAL_DELAY = 1 * 1000;
+   static private long   INITIAL_DELAY = 1 * 1000;
+   static private String OFF_MSG = "[NOTE] Analyzer log not available in console. " +
+	                           "Analysis may be running on a remote machine.\n";
 
    private long    interval;
    private boolean    alive;
@@ -63,13 +65,16 @@ class StatusPoller extends Thread {
 
  
    public void run() {
-       boolean active               = true;
-       RandomAccessFile fileHandler = null;
-       StringBuilder             sb = null;
+       boolean                   active = true;
+       boolean          exceptionCaught = false;
+       RandomAccessFile     fileHandler = null;
+       StringBuilder                 sb = null;
+
        long lpos = 0, cpos;
        try { this.sleep(INITIAL_DELAY); }
        catch(InterruptedException e) {}
-       while(active) {
+
+       while(active && !exceptionCaught) {
          if(!alive) // last update 
             active = false;
          try {
@@ -88,10 +93,14 @@ class StatusPoller extends Thread {
          catch(InterruptedException ie) {
          }
          catch( FileNotFoundException e ) {
-            e.printStackTrace();
+	    if(!exceptionCaught)
+	       this.listener.getLogger().print(OFF_MSG);
+            exceptionCaught = true;
          } 
          catch( IOException e ) {
-            e.printStackTrace();
+            if(!exceptionCaught)
+               this.listener.getLogger().print(OFF_MSG);
+            exceptionCaught = true;
          }
          finally {
             if (fileHandler != null )
