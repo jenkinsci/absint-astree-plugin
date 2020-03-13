@@ -332,11 +332,11 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         String reportfile = workspace.toString() + (launcher.isUnix() ? "/" : "\\") + TMP_REPORT_FILE;
 
         FilePath rfile;
+	    rfile = new FilePath(workspace, TMP_REPORT_FILE + ".txt");
         try {
            // Analysis run started. ID plugin in Jenkins output.
             listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
             // Clear log file
-            rfile = new FilePath(workspace, TMP_REPORT_FILE + ".txt");
             if( rfile.delete() )
                listener.getLogger().println("Old log file erased.");
             rfile.touch(System.currentTimeMillis());
@@ -386,9 +386,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             listener.getLogger().println("InterruptedException caught during analysis run.");
          }
          if(exitCode == 0) { // activities after successful analysis run
+             try {
                 /* Read analysis summary and 
                    check whether Astrée shall fail the build due to reported errors etc */
-                AnalysisSummary summary = AnalysisSummary.readFromReportFile(reportfile + ".txt");
+                AnalysisSummary summary = AnalysisSummary.readFromReportFile(rfile);
                 if(      failonswitch != null && failonswitch.failOnErrors() 
                       && summary.getNumberOfErrors() > 0) {
                     listener.getLogger().println( "Errors reported! Number of errors: " + 
@@ -407,6 +408,14 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                                + summary.getNumberOfAlarms() > 0) ) {
                     build.setResult(hudson.model.Result.FAILURE);
                 }
+             }
+             catch (IOException e) {
+                 e.printStackTrace();
+                 listener.getLogger().println("IOException caught during read analysis summary.");
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+                 listener.getLogger().println("InterruptedException caught during read analysis summary.");
+             }
          } else {  // activities after unsuccessful analysis run
                 // If Astrée cannot be invoked, conservatively fail the build...   
                 build.setResult(hudson.model.Result.FAILURE);
