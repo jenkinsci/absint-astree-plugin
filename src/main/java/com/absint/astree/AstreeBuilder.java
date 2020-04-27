@@ -297,7 +297,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                      ((this.dax_file != null && !this.dax_file.trim().equals("") )      ?
                         (" --import \"" + this.dax_file + "\"") : "")              +
                      " --report-file " + "\"" + reportfile + ".txt\"" +
-                     " --xml-result-file " + "\"" + reportfile + ".xml\"";
+                     " --xml-report-file " + "\"" + reportfile + ".xml\"";
         if(this.genPreprocessOutput)
                 cmd += " --preprocess-report-file " + "\"" + preprocessoutput + "\"";
         if(this.dropAnalysis)
