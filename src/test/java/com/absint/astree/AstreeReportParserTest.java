@@ -16,7 +16,10 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import edu.hm.hafner.analysis.FileReaderFactory;
+import edu.hm.hafner.analysis.Issue;
 import edu.hm.hafner.analysis.ReaderFactory;
+import edu.hm.hafner.analysis.Report;
+import edu.hm.hafner.analysis.Severity;
 
 /**
  * Tests for {@link AstreeReportParser}.
@@ -35,6 +38,39 @@ public class AstreeReportParserTest {
         
         // test if text file rejected
         assertFalse(parser.accepts(new FileReaderFactory(getResourceAsFile("analysis_report.txt").toPath())));
+    }
+
+    /**
+     * Tests if {@link AstreeReportParser} parses given test XML report completely
+     */
+    @Test
+    public void parsedComplete() {
+        AstreeReportParser parser = new AstreeReportParser();
+
+        // parse test file
+        Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
+
+        // check for completeness
+        assertEquals(2, report.size());
+    }
+    
+    /**
+     * Tests if {@link AstreeReportParser} parses all alarms correct in given test XML report
+     */
+    @Test
+    public void checkAlarms() {
+        AstreeReportParser parser = new AstreeReportParser();
+
+        // parse test file
+        Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
+
+        // retrieve all alarms from report
+        Report warnings = report.filter(Issue.bySeverity(new Severity("ALARM")));
+        
+        // check if all alarms are in the report
+        assertEquals(2, warnings.size());
+
+        ///@TODO add more tests here
     }
 
     /**
