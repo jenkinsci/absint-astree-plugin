@@ -661,9 +661,9 @@
             </code-snippet>
         </code-snippets>
         <files>
-            <file preprocessed="1" name="File1.i" id="p239"/>
-            <file preprocessed="1" name="File2.i" id="p258"/>
-            <file preprocessed="0" name="File1.c" id="o78"/>
+            <file preprocessed="1" name="C:/dir/File1.i" id="p239"/>
+            <file preprocessed="1" name="dir/File2.i" id="p258"/>
+            <file preprocessed="0" name="../File1.c" id="o78"/>
             <file preprocessed="0" name="File3.h" id="o15"/>
             <file preprocessed="0" name="File2.c" id="o140"/>
         </files>

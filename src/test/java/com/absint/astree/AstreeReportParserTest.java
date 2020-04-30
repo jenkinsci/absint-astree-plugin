@@ -65,12 +65,37 @@ public class AstreeReportParserTest {
         Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
 
         // retrieve all alarms from report
-        Report warnings = report.filter(Issue.bySeverity(new Severity("ALARM")));
+        Report alarms = report.filter(Issue.bySeverity(new Severity("ALARM")));
         
         // check if all alarms are in the report
-        assertEquals(2, warnings.size());
+        assertEquals(2, alarms.size());
 
-        ///@TODO add more tests here
+        // check alarm1
+        Issue alarm1 = alarms.get(0);
+        assertEquals(new Severity("ALARM"), alarm1.getSeverity());
+        assertEquals("Reserved identifier", alarm1.getCategory());
+        assertEquals("File3.h", alarm1.getFileName());
+        assertEquals(51, alarm1.getLineStart());
+        assertEquals(51, alarm1.getLineEnd());
+        assertEquals(8, alarm1.getColumnStart());
+        assertEquals(25, alarm1.getColumnEnd());
+        assertEquals("ALARM (R): check reserved-identifier failed (violates M2012.21.1-required)\n" + 
+                "#define _SW_TYPES_H_\n" +
+                "        ~~~~~~~~~~~~~~~~~", alarm1.getMessage());
+
+        // check alarm2
+        Issue alarm2 = alarms.get(1);
+        assertEquals(new Severity("ALARM"), alarm2.getSeverity());
+        assertEquals("Essential arithmetic conversion", alarm2.getCategory());
+        assertEquals("C:/dir/File1.i", alarm2.getFileName());
+        assertEquals(1841, alarm2.getLineStart());
+        assertEquals(1841, alarm2.getLineEnd());
+        assertEquals(18, alarm2.getColumnStart());
+        assertEquals(27, alarm2.getColumnEnd());
+        assertEquals("[ the essential operand types are unsigned char and signed char\n" +
+                "ALARM (R): check essential-arithmetic-conversion failed (violates M2012.10.4-required)\n" +
+                "for ((i = 0); (i < (2)); (i++))\n" +
+                "              ~~~~~~~~~", alarm2.getMessage());
     }
 
     /**
