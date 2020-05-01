@@ -65,41 +65,46 @@ public class AstreeReportParserTest {
         Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
 
         // retrieve all alarms from report
-        Report alarms = report.filter(Issue.bySeverity(new Severity("ALARM")));
+        Report alarms = report.filter(Issue.bySeverity(Severity.WARNING_HIGH));
         
         // check if all alarms are in the report
         assertEquals(2, alarms.size());
 
         // check alarm1
         Issue alarm1 = alarms.get(0);
-        assertEquals(new Severity("ALARM"), alarm1.getSeverity());
-        assertEquals("Reserved identifier (Failed coding rule checks)", alarm1.getCategory());
+        assertEquals(Severity.WARNING_HIGH, alarm1.getSeverity());
+        assertEquals("Reserved identifier [Failed coding rule checks]", alarm1.getCategory());
         assertEquals("File3.h", alarm1.getFileName());
         assertEquals(51, alarm1.getLineStart());
         assertEquals(51, alarm1.getLineEnd());
         assertEquals(8, alarm1.getColumnStart());
         assertEquals(25, alarm1.getColumnEnd());
-        assertEquals("ALARM (R): check reserved-identifier failed (violates M2012.21.1-required)\n" + 
-                "#define _SW_TYPES_H_\n" +
-                "        ~~~~~~~~~~~~~~~~~", alarm1.getMessage());
+        assertEquals("ALARM (R): check reserved-identifier failed (violates M2012.21.1-required)",
+                alarm1.getMessage());
         assertEquals("test", alarm1.getReference());
-        assertEquals("", alarm1.getDescription());
+        assertTrue(alarm1.getDescription()
+                .replaceAll("&nbsp;", " ")
+                .contains("#define _SW_TYPES_H_<br>" +
+                    "        ~~~~~~~~~~~~~~~~~"));
 
         // check alarm2
         Issue alarm2 = alarms.get(1);
-        assertEquals(new Severity("ALARM"), alarm2.getSeverity());
-        assertEquals("Essential arithmetic conversion (Failed coding rule checks)", alarm2.getCategory());
+        assertEquals(Severity.WARNING_HIGH, alarm2.getSeverity());
+        assertEquals("Essential arithmetic conversion [Failed coding rule checks]", alarm2.getCategory());
         assertEquals("C:/dir/File1.i", alarm2.getFileName());
         assertEquals(1841, alarm2.getLineStart());
         assertEquals(1841, alarm2.getLineEnd());
         assertEquals(18, alarm2.getColumnStart());
         assertEquals(27, alarm2.getColumnEnd());
-        assertEquals("[ the essential operand types are unsigned char and signed char\n" +
-                "ALARM (R): check essential-arithmetic-conversion failed (violates M2012.10.4-required)\n" +
-                "for ((i = 0); (i < (2)); (i++))\n" +
-                "              ~~~~~~~~~", alarm2.getMessage());
+        assertEquals("[ the essential operand types are unsigned char and signed char<br>" +
+                "ALARM (R): check essential-arithmetic-conversion failed (violates M2012.10.4-required)", 
+                alarm2.getMessage());
         assertEquals("test", alarm2.getReference());
-        assertEquals("", alarm2.getDescription());
+        assertTrue(alarm2.getDescription()
+                .replaceAll("&nbsp;", " ")
+                .contains("for ((i = 0); (i < (2)); (i++))<br>" +
+                    "              ~~~~~~~~~"));
+
     }
 
     /**
@@ -121,7 +126,7 @@ public class AstreeReportParserTest {
         // check error1
         Issue error1 = errors.get(0);
         assertEquals(Severity.ERROR, error1.getSeverity());
-        assertEquals("Definite runtime error (Errors)", error1.getCategory());
+        assertEquals("Definite runtime error [Errors]", error1.getCategory());
         assertEquals("dir/File2.i", error1.getFileName());
         assertEquals(974, error1.getLineStart());
         assertEquals(974, error1.getLineEnd());
@@ -130,7 +135,9 @@ public class AstreeReportParserTest {
         assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", 
                 error1.getMessage());
         assertEquals("test", error1.getReference());
-        assertEquals("Context: l3532#call#Reset_Handler,l3533#call#STARTUP_initDataBSS,l3534#loop=1/1", error1.getDescription());
+        assertTrue(error1.getDescription()
+                .replaceAll("&nbsp;", " ")
+                .contains("l3532#call#Reset_Handler,l3533#call#STARTUP_initDataBSS,l3534#loop=1/1"));
     }
 
     /**
@@ -144,25 +151,26 @@ public class AstreeReportParserTest {
         Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
 
         // retrieve all notes from report
-        Report notes = report.filter(Issue.bySeverity(new Severity("NOTE")));
+        Report notes = report.filter(Issue.bySeverity(Severity.WARNING_LOW));
         
         // check if all notes are in the report
         assertEquals(1, notes.size());
 
         // check note1
         Issue note1 = notes.get(0);
-        assertEquals(new Severity("NOTE"), note1.getSeverity());
+        assertEquals(Severity.WARNING_LOW, note1.getSeverity());
         assertEquals("", note1.getCategory());
         assertEquals("File3.h", note1.getFileName());
         assertEquals(51, note1.getLineStart());
         assertEquals(51, note1.getLineEnd());
         assertEquals(8, note1.getColumnStart());
         assertEquals(25, note1.getColumnEnd());
-        assertEquals("NOTE: Suspicious here!\n" + 
-                "#define _SW_TYPES_H_\n" +
-                "        ~~~~~~~~~~~~~~~~~", note1.getMessage());
+        assertEquals("NOTE: Suspicious here!", note1.getMessage());
         assertEquals("test", note1.getReference());
-        assertEquals("", note1.getDescription());
+        assertTrue(note1.getDescription()
+                .replaceAll("&nbsp;", " ")
+                .contains("#define _SW_TYPES_H_<br>" +
+                    "        ~~~~~~~~~~~~~~~~~"));
     }
 
     /**

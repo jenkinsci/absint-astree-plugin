@@ -51,7 +51,7 @@ public class AstreeReportParser extends IssueParser {
         issueBuilder.setReference(reference);
 
         // add all alarms
-        issueBuilder.setSeverity(new Severity("ALARM"));
+        issueBuilder.setSeverity(Severity.WARNING_HIGH);
         report.addAll(getMessages(doc, "alarm_message", issueBuilder.build()));
  
         // add all errors
@@ -59,7 +59,7 @@ public class AstreeReportParser extends IssueParser {
         report.addAll(getMessages(doc, "error_message", issueBuilder.build()));
         
         // add all notes
-        issueBuilder.setSeverity(new Severity("NOTE"));
+        issueBuilder.setSeverity(Severity.WARNING_LOW);
         report.addAll(getMessages(doc, "note_message", issueBuilder.build()));
 
         return report;
@@ -84,7 +84,7 @@ public class AstreeReportParser extends IssueParser {
             for (int y = 0; y < lines.getLength(); y++) {
                 Element line = (Element)lines.item(y);
                 if (!messageText.isEmpty()) {
-                    messageText += "\n";
+                    messageText += "<br>";
                 }
                 messageText += line.getTextContent();
             }
@@ -93,18 +93,18 @@ public class AstreeReportParser extends IssueParser {
             String locationID = message.getAttribute("location_id");
 
             // add code snippet to alarm message
+            String description = "";
             String code = getCodeSnippet(doc, locationID);
             if (!code.isEmpty()) {
-                messageText += "\n" + code;
+                description += "<p>Code:<br><code>" + code.replaceAll(" ", "&nbsp;") + "</code></p>";
             }
 
             // get alarm type
             String type = getAlarmType(doc, message.getAttribute("type"));
 
             //Add context of message to context 
-            String description = "";
             if (message.hasAttribute("context")) {
-                description = "Context: " + message.getAttribute("context");
+                description += "<p>Context:<br><code>" + message.getAttribute("context").replaceAll(" ", "&nbsp;") + "</code></p>";
             }
 
             // retrieve location of alarm
@@ -198,7 +198,7 @@ public class AstreeReportParser extends IssueParser {
                 for (int y = 0; y < lines.getLength(); y++) {
                     Element line = (Element)lines.item(y);
                     if (!code.isEmpty())
-                        code += "\n";
+                        code += "<br>";
                     code += line.getTextContent();
                 }
                 break;
@@ -227,7 +227,7 @@ public class AstreeReportParser extends IssueParser {
                 for (int y = 0; y < alarmCategories.getLength(); y++) {
                     Element alarmCategory = (Element)alarmCategories.item(y);
                     if (alarmCategory.getAttribute("id").equals(categoryID)) {
-                        type += " (" + alarmCategory.getTextContent() + ")";
+                        type += " [" + alarmCategory.getTextContent() + "]";
                     }
                 }
                 
