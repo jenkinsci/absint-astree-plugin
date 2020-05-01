@@ -4,6 +4,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import edu.hm.hafner.analysis.Issue;
 import edu.hm.hafner.analysis.IssueParser;
 import edu.hm.hafner.analysis.IssueBuilder;
 import edu.hm.hafner.analysis.ParsingException;
@@ -35,61 +36,97 @@ public class AstreeReportParser extends IssueParser {
     public Report parse(final ReaderFactory readerFactory) throws ParsingException {
         Document doc = readerFactory.readDocument();
         
-        IssueBuilder issueBuilder = new IssueBuilder();
         Report report = new Report();
 
-        // find all alarms
-        NodeList alarms = doc.getElementsByTagName("alarm_message");
-        for (int i = 0; i < alarms.getLength(); i++) {
-            Element alarm = (Element)alarms.item(i);
+        // use project description as reference
+        String reference = "";
+        NodeList projects = doc.getElementsByTagName("project");
+        if (projects.getLength() > 0) {
+            Element project = (Element)projects.item(0);
+            reference = project.getAttribute("description");
+        }
 
-            // alarm message
-            NodeList lines = alarm.getElementsByTagName("textline");
-            String alarmMessage = "";
+        // create template with basic settings for issues
+        IssueBuilder issueBuilder = new IssueBuilder();
+        issueBuilder.setReference(reference);
+
+        // add all alarms
+        issueBuilder.setSeverity(new Severity("ALARM"));
+        report.addAll(getMessages(doc, "alarm_message", issueBuilder.build()));
+ 
+        // add all errors
+        issueBuilder.setSeverity(Severity.ERROR);
+        report.addAll(getMessages(doc, "error_message", issueBuilder.build()));
+        
+        // add all notes
+        issueBuilder.setSeverity(new Severity("NOTE"));
+        report.addAll(getMessages(doc, "note_message", issueBuilder.build()));
+
+        return report;
+    }
+
+    /**
+     * get all messages of given tag name and classify them with given severity
+     */
+    Report getMessages(Document doc, String tagName, Issue issue) {
+        IssueBuilder issueBuilder = new IssueBuilder();
+        issueBuilder.copy(issue);
+        Report report = new Report();
+
+        // find all messages with tag name
+        NodeList messages = doc.getElementsByTagName(tagName);
+        for (int i = 0; i < messages.getLength(); i++) {
+            Element message = (Element)messages.item(i);
+
+            // message
+            NodeList lines = message.getElementsByTagName("textline");
+            String messageText = "";
             for (int y = 0; y < lines.getLength(); y++) {
                 Element line = (Element)lines.item(y);
-                if (!alarmMessage.isEmpty()) {
-                    alarmMessage += "\n";
+                if (!messageText.isEmpty()) {
+                    messageText += "\n";
                 }
-                alarmMessage += line.getTextContent();
+                messageText += line.getTextContent();
             }
 
             // get location ID
-            String locationID = alarm.getAttribute("location_id");
+            String locationID = message.getAttribute("location_id");
 
             // add code snippet to alarm message
             String code = getCodeSnippet(doc, locationID);
             if (!code.isEmpty()) {
-                alarmMessage += "\n" + code;
+                messageText += "\n" + code;
             }
 
             // get alarm type
-            String alarmType = getAlarmType(doc, alarm.getAttribute("type"));
+            String type = getAlarmType(doc, message.getAttribute("type"));
 
-            ///@TODO get rule_description -> description 
+            //Add context of message to context 
+            String description = "";
+            if (message.hasAttribute("context")) {
+                description = "Context: " + message.getAttribute("context");
+            }
 
             // retrieve location of alarm
             Location location = getLocation (doc, locationID);
 
             // create new issue
-            issueBuilder.setMessage(alarmMessage)
+            issueBuilder.setMessage(messageText)
                 .setFileName(location.getFileName())
                 .setLineStart(location.getLineStart())
                 .setLineEnd(location.getLineEnd())
                 .setColumnStart(location.getColStart())
                 .setColumnEnd(location.getColEnd())
-                .setCategory(alarmType)
-                .setSeverity(new Severity("ALARM"));
+                .setCategory(type)
+                .setDescription(description);
 
             // add issue to report
             report.add(issueBuilder.build());
         }
 
-        ///@TODO find all errors
-        ///@TODO find all notes
-
         return report;
     }
+
 
     /**
      * get location information for given location ID
@@ -175,7 +212,7 @@ public class AstreeReportParser extends IssueParser {
      * get alarm type for given type ID
      */
     String getAlarmType(Document doc, String alarmTypeID) {
-        String type = new String();
+        String type = "";
 
         // search for alarm type with alarmTypeID
         NodeList alarmTypes = doc.getElementsByTagName("alarm_type");
@@ -183,7 +220,17 @@ public class AstreeReportParser extends IssueParser {
             Element alarmType = (Element)alarmTypes.item(i);
             if (alarmType.getAttribute("id").equals(alarmTypeID)) {
                 type = alarmType.getTextContent();
-                ///@TODO retrieve alarm_category and add it to alarm type
+                String categoryID = alarmType.getAttribute("category_id");
+                
+                // retrieve alarm_category and add it to alarm type
+                NodeList alarmCategories = doc.getElementsByTagName("alarm_category");
+                for (int y = 0; y < alarmCategories.getLength(); y++) {
+                    Element alarmCategory = (Element)alarmCategories.item(y);
+                    if (alarmCategory.getAttribute("id").equals(categoryID)) {
+                        type += " (" + alarmCategory.getTextContent() + ")";
+                    }
+                }
+                
                 break;
             }
         }

@@ -51,7 +51,7 @@ public class AstreeReportParserTest {
         Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
 
         // check for completeness
-        assertEquals(2, report.size());
+        assertEquals(4, report.size());
     }
     
     /**
@@ -73,7 +73,7 @@ public class AstreeReportParserTest {
         // check alarm1
         Issue alarm1 = alarms.get(0);
         assertEquals(new Severity("ALARM"), alarm1.getSeverity());
-        assertEquals("Reserved identifier", alarm1.getCategory());
+        assertEquals("Reserved identifier (Failed coding rule checks)", alarm1.getCategory());
         assertEquals("File3.h", alarm1.getFileName());
         assertEquals(51, alarm1.getLineStart());
         assertEquals(51, alarm1.getLineEnd());
@@ -82,11 +82,13 @@ public class AstreeReportParserTest {
         assertEquals("ALARM (R): check reserved-identifier failed (violates M2012.21.1-required)\n" + 
                 "#define _SW_TYPES_H_\n" +
                 "        ~~~~~~~~~~~~~~~~~", alarm1.getMessage());
+        assertEquals("test", alarm1.getReference());
+        assertEquals("", alarm1.getDescription());
 
         // check alarm2
         Issue alarm2 = alarms.get(1);
         assertEquals(new Severity("ALARM"), alarm2.getSeverity());
-        assertEquals("Essential arithmetic conversion", alarm2.getCategory());
+        assertEquals("Essential arithmetic conversion (Failed coding rule checks)", alarm2.getCategory());
         assertEquals("C:/dir/File1.i", alarm2.getFileName());
         assertEquals(1841, alarm2.getLineStart());
         assertEquals(1841, alarm2.getLineEnd());
@@ -96,6 +98,71 @@ public class AstreeReportParserTest {
                 "ALARM (R): check essential-arithmetic-conversion failed (violates M2012.10.4-required)\n" +
                 "for ((i = 0); (i < (2)); (i++))\n" +
                 "              ~~~~~~~~~", alarm2.getMessage());
+        assertEquals("test", alarm2.getReference());
+        assertEquals("", alarm2.getDescription());
+    }
+
+    /**
+     * Tests if {@link AstreeReportParser} parses all errors correct in given test XML report
+     */
+    @Test
+    public void checkErrors() {
+        AstreeReportParser parser = new AstreeReportParser();
+
+        // parse test file
+        Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
+
+        // retrieve all errors from report
+        Report errors = report.filter(Issue.bySeverity(Severity.ERROR));
+        
+        // check if all errors are in the report
+        assertEquals(1, errors.size());
+
+        // check error1
+        Issue error1 = errors.get(0);
+        assertEquals(Severity.ERROR, error1.getSeverity());
+        assertEquals("Definite runtime error (Errors)", error1.getCategory());
+        assertEquals("dir/File2.i", error1.getFileName());
+        assertEquals(974, error1.getLineStart());
+        assertEquals(974, error1.getLineEnd());
+        assertEquals(8, error1.getColumnStart());
+        assertEquals(24, error1.getColumnEnd());
+        assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", 
+                error1.getMessage());
+        assertEquals("test", error1.getReference());
+        assertEquals("Context: l3532#call#Reset_Handler,l3533#call#STARTUP_initDataBSS,l3534#loop=1/1", error1.getDescription());
+    }
+
+    /**
+     * Tests if {@link AstreeReportParser} parses all notes correct in given test XML report
+     */
+    @Test
+    public void checkNotes() {
+        AstreeReportParser parser = new AstreeReportParser();
+
+        // parse test file
+        Report report = parser.parse(new FileReaderFactory(getResourceAsFile("analysis_report.xml").toPath()));
+
+        // retrieve all notes from report
+        Report notes = report.filter(Issue.bySeverity(new Severity("NOTE")));
+        
+        // check if all notes are in the report
+        assertEquals(1, notes.size());
+
+        // check note1
+        Issue note1 = notes.get(0);
+        assertEquals(new Severity("NOTE"), note1.getSeverity());
+        assertEquals("", note1.getCategory());
+        assertEquals("File3.h", note1.getFileName());
+        assertEquals(51, note1.getLineStart());
+        assertEquals(51, note1.getLineEnd());
+        assertEquals(8, note1.getColumnStart());
+        assertEquals(25, note1.getColumnEnd());
+        assertEquals("NOTE: Suspicious here!\n" + 
+                "#define _SW_TYPES_H_\n" +
+                "        ~~~~~~~~~~~~~~~~~", note1.getMessage());
+        assertEquals("test", note1.getReference());
+        assertEquals("", note1.getDescription());
     }
 
     /**
