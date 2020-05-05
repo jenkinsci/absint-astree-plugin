@@ -5,223 +5,262 @@ package com.absint.astree;
  */
 public class Location {
     /**
-     * name of the file
+     * ID of the file
      */
-    private String fileName;
+    private String m_fileID = "";
 
     /**
      * name of the original file
      */
-    private String origFileName;
+    private String m_origFileID = "";
 
     /**
      * start line number in the file
      */
-    private String startLine;
+    private String m_startLine = "";
 
     /**
      * end line number in the file
      */
-    private String endLine;
+    private String m_endLine = "";
 
     /**
      * start line number in the original file
      */
-    private String origLineStart;
+    private String m_origLineStart = "";
 
     /**
      * end line number in the original file
      */
-    private String origLineEnd;
+    private String m_origLineEnd = "";
 
     /**
      * start column number in the file
      */
-    private String startCol;
+    private String m_startCol = "";
 
     /**
      * end column number in the file
      */
-    private String endCol;
+    private String m_endCol = "";
 
     /**
      * start column number in the original file
      */
-    private String origColStart;
+    private String m_origColStart = "";
 
     /**
      * end column number in the original file
      */
-    private String origColEnd;
+    private String m_origColEnd = "";
 
     /**
-     * get file name
+     * get file ID
+     * 
+     * @return file ID
      */
-    public String getFileName() {
-        if (null != fileName)
-            return fileName;
-        else
-            return new String("");
+    public String getFileID() {
+        return m_fileID;
     }
 
     /**
-     * set file name
+     * set file ID
+     * 
+     * @param id file ID
+     *
+     * @return this
      */
-    public void setFileName(String name) {
-        fileName = name;
+    public Location setFileID(String id) {
+        m_fileID = id;
+        return this;
     }
  
     /**
-     * get original file name
+     * get original file ID
+     *
+     * @return original file ID
      */
-    public String getOrigfileName() {
-        if (null != origFileName)
-            return origFileName;
-        else
-            return new String("");
+    public String getOrigFileID() {
+        return m_origFileID;
     }
 
     /**
-     * set original file name
+     * set original file ID
+     *
+     * @param id set orignal file ID
+     *
+     * @return this
      */
-    public void setOrigFileName(String name) {
-        origFileName = name;
+    public Location setOrigFileID(String id) {
+        m_origFileID = id;
+        return this;
     }
 
     /**
      * get start line number in file
+     *
+     * @return start line number
      */
     public String getLineStart() {
-        if (null != startLine)
-            return startLine;
-        else
-            return new String("");
+        return m_startLine;
     }
  
     /**
      * get end line number in file
+     * 
+     * @return end line number
      */
     public String getLineEnd() {
-        if (null != endLine)
-            return endLine;
-        else
-            return new String("");
+        return m_endLine;
     }
 
     /**
      * get original start line number in file
+     * 
+     * @return original start line number
      */
     public String getOrigLineStart() {
-        if (null != origLineStart)
-            return origLineStart;
-        else
-            return new String("");
+        return m_origLineStart;
     }
 
     /**
      * get original end line number in file
+     * 
+     * @return original end line number
      */
     public String getOrigLineEnd() {
-        if (null != origLineEnd)
-            return origLineEnd;
-        else
-            return new String("");
+        return m_origLineEnd;
     }
 
     /**
      * set start line number in file
+     *
+     * @param line start line number
+     *
+     * @return this
      */
-    public void setLineStart(String line) {
-        startLine = line;
+    public Location setLineStart(String line) {
+        m_startLine = line;
+        return this;
     }
  
     /**
      * set end line number in file
+     *
+     * @param line end line number
+     * 
+     * @return this
      */
-    public void setLineEnd(String line) {
-        endLine = line;
+    public Location setLineEnd(String line) {
+        m_endLine = line;
+        return this;
     }
 
     /**
      * set original start line number in file
+     * 
+     * @param line original start line number
+     * 
+     * @return this
      */
-    public void setOrigLineStart(String line) {
-        origLineStart = line;
+    public Location setOrigLineStart(String line) {
+        m_origLineStart = line;
+        return this;
     }
  
     /**
      * set original end line number in file
+     * 
+     * @param line original end line number
+     * 
+     * @return this
      */
-    public void setOrigLineEnd(String line) {
-        origLineEnd = line;
+    public Location setOrigLineEnd(String line) {
+        m_origLineEnd = line;
+        return this;
     }
  
     /**
      * get start column number in file
+     *
+     * @return start column number
      */
     public String getColStart() {
-        if (null != startCol)
-            return startCol;
-        else
-            return new String("");
+        return m_startCol;
     }
  
     /**
      * get end column number in file
+     * 
+     * @return end column number
      */
     public String getColEnd() {
-        if (null != endCol)
-            return endCol;
-        else
-            return new String("");
+        return m_endCol;
     }
 
     /**
      * get original start column number in file
+     * 
+     * @return original start column number
      */
     public String getOrigColStart() {
-        if (null != origColStart)
-            return origColStart;
-        else
-            return new String("");
+        return m_origColStart;
     }
 
     /**
      * get original end column number in file
+     * 
+     * @return original end column number
      */
     public String getOrigColEnd() {
-        if (null != origColEnd)
-            return origColEnd;
-        else
-            return new String("");
+        return m_origColEnd;
     }
 
     /**
      * set start column number in file
+     * 
+     * @param column start column number
+     *
+     * @return this
      */
-    public void setColStart(String column) {
-        startCol = column;
+    public Location setColStart(String column) {
+        m_startCol = column;
+        return this;
     }
  
     /**
      * set end column number in file
+     * 
+     * @param column end column number
+     *
+     * @return this
      */
-    public void setColEnd(String column) {
-        endCol = column;
+    public Location setColEnd(String column) {
+        m_endCol = column;
+        return this;
     }
 
     /**
      * set original start line number in file
+     * 
+     * @param column original start column number
+     *
+     * @return this
      */
-    public void setOrigColStart(String column) {
-        origColStart = column;
+    public Location setOrigColStart(String column) {
+        m_origColStart = column;
+        return this;
     }
  
     /**
      * set original end line number in file
+     * 
+     * @param column original end column number
+     *
+     * @return this
      */
-    public void setOrigColEnd(String column) {
-        origColEnd = column;
+    public Location setOrigColEnd(String column) {
+        m_origColEnd = column;
+        return this;
     }
-
 }

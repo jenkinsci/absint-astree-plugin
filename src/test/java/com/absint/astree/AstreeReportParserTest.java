@@ -159,7 +159,7 @@ public class AstreeReportParserTest {
         // check note1
         Issue note1 = notes.get(0);
         assertEquals(Severity.WARNING_LOW, note1.getSeverity());
-        assertEquals("", note1.getCategory());
+        assertEquals("Other [Errors]", note1.getCategory());
         assertEquals("File3.h", note1.getFileName());
         assertEquals(51, note1.getLineStart());
         assertEquals(51, note1.getLineEnd());

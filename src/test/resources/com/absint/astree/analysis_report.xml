@@ -646,7 +646,7 @@
                 <textline location_id="l2548">[ the essential operand types are unsigned char and signed char</textline>
                 <textline location_id="l2548">ALARM (R): check essential-arithmetic-conversion failed (violates M2012.10.4-required)</textline>
             </alarm_message>
-            <note_message location_id="l1" duplicate="0">
+            <note_message location_id="l1" type="a21536" duplicate="0">
                 <textline location_id="l1">NOTE: Suspicious here!</textline>
             </note_message>
             <error_message context="l3532#call#Reset_Handler,l3533#call#STARTUP_initDataBSS,l3534#loop=1/1" location_id="l3537" type="a21541" duplicate="0">
