@@ -47,6 +47,38 @@
   </f:block>
   </f:entry>
 
+  <f:entry>
+  <f:block>
+    <table>
+      <f:optionalBlock title="Use non-default analysis server ..."
+                       field="project_server">
+        <f:entry title="Project-specific Astrée configuration">
+    <f:entry title="a³ for C Client" field="pc_alauncher"
+      description="Specify the path to your local a³ for C client (a3c)">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="Run in compatibility mode with release 16.10" field="pc_comp1610">
+     <f:checkbox/>
+    </f:entry>
+    <f:entry title="Astrée Server" field="pc_astree_server"
+      description="Specify the URL  of your Astrée Server as [hostname]:[port]">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="Username" field="pc_user"
+      description="Specify your Astrée User Name">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="Password" field="pc_password"
+      description="Specify your Astrée User Password">
+      <f:textbox />
+    </f:entry>
+        </f:entry>
+      </f:optionalBlock>
+    </table>
+  </f:block>
+  </f:entry>
+
+
   </f:section>
 
   <f:section title="Summary Reports (for release 16.10 and older)">

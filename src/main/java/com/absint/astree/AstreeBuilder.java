@@ -82,7 +82,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
                           boolean genXMLOverview, boolean genXMLCoverage, boolean genXMLAlarmsByOccurence,
                           boolean genXMLAlarmsByCategory, boolean genXMLAlarmsByFile, boolean genXMLRulechecks,
-                          boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch
+                          boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch, 
+			  AnalysisServerConfiguration analysisSrv
                         ) 
     {
         this.dax_file        = dax_file;
@@ -524,6 +525,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  * Performs on-the-fly validation of the form field 'alauncher'.
  *
  * @param value           The value that the user has typed.
+ * @param project         unused
  * @return
  *      Indicates the outcome of the validation. This is sent to the browser.
  *      <br>
@@ -552,7 +554,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
 /**
  * Helper method to check whether a string contains an environment variable of form
- * <br><tt>${IDENTIFIER}</tt><br>
+ * <br>${IDENTIFIER}<br>
  *
  * @param   s    String to scan for environment variable expressions
  * @return  Outcome of the check as a boolean (true if such an expression
