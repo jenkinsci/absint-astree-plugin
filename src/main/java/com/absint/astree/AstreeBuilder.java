@@ -293,6 +293,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
         cmd = cmd  + " " + (c1610 ? "-a " : "") + "-b -s "                        +
                      getDescriptor().getAstree_server()  + " "                     +
+                     ((!getDescriptor().getUser().trim().equals("") && !getDescriptor().getPassword().trim().equals("")) ?
+                       ( "--user " + getDescriptor().getUser() + "@" + getDescriptor().getPassword() ) : "")  +
                      ((this.analysis_id != null && !this.analysis_id.trim().equals("")) ?
                         (" --id " + this.analysis_id) : "" )                       +
                      ((this.dax_file != null && !this.dax_file.trim().equals("") )      ?
