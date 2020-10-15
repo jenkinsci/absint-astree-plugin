@@ -26,6 +26,8 @@
 
 package com.absint.astree;
 
+import hudson.FilePath;
+
 import java.io.*;
 
 
@@ -65,18 +67,19 @@ public class AnalysisSummary {
  * @param path        Path (as {@link java.lang.String}) to the Astrée text report 
  *                    from which the object is to be constructed.
  * @return AnalysisSummary object providing easy access to data of an Astrée report 
+ * @throws IOException               as super class
+ * @throws InterruptedException      as super class
  */
-    static public AnalysisSummary readFromReportFile(String path) {
+    static public AnalysisSummary readFromReportFile(FilePath path)
+            throws IOException, InterruptedException {
         int numberOfErrors = 0;
         int numberOfAlarms = 0;
         int numberOfFlowAnomalies     = 0;
         int numberOfRuleViolations    = 0;
         int numberOfTrueAlarms        = 0;   // not implemented yet
         int numberOfUncommentedAlarms = 0;   // not implemented yet
-        try{
             BufferedReader br = new BufferedReader(
-                                    new InputStreamReader( 
-                                       new FileInputStream(path), "UTF-8" ));
+                                    new InputStreamReader(path.read(), "UTF-8" ));
             String line = br.readLine();
             boolean skipping = true;
             while(line != null) {
@@ -102,9 +105,6 @@ public class AnalysisSummary {
                 line = br.readLine();
             }
             br.close();
-        } catch(IOException e) {
-              return null;
-        }
         return new AnalysisSummary(numberOfErrors, numberOfAlarms, 
                                    numberOfFlowAnomalies, numberOfRuleViolations,
                                    numberOfTrueAlarms, numberOfUncommentedAlarms );

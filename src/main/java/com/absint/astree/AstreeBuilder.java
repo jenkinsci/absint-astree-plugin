@@ -82,7 +82,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
     public AstreeBuilder( String dax_file, String analysis_id, String output_dir, boolean skip_analysis,
                           boolean genXMLOverview, boolean genXMLCoverage, boolean genXMLAlarmsByOccurence,
                           boolean genXMLAlarmsByCategory, boolean genXMLAlarmsByFile, boolean genXMLRulechecks,
-                          boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch
+                          boolean dropAnalysis, boolean genPreprocessOutput, FailonSwitch failonswitch, 
+			  AnalysisServerConfiguration analysisSrv
                         ) 
     {
         this.dax_file        = dax_file;
@@ -292,6 +293,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
         cmd = cmd  + " " + (c1610 ? "-a " : "") + "-b -s "                        +
                      getDescriptor().getAstree_server()  + " "                     +
+                     ((!getDescriptor().getUser().trim().equals("") && !getDescriptor().getPassword().trim().equals("")) ?
+                       ( "--user " + getDescriptor().getUser() + "@" + getDescriptor().getPassword() ) : "")  +
                      ((this.analysis_id != null && !this.analysis_id.trim().equals("")) ?
                         (" --id " + this.analysis_id) : "" )                       +
                      ((this.dax_file != null && !this.dax_file.trim().equals("") )      ?
@@ -332,11 +335,11 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         String reportfile = workspace.toString() + (launcher.isUnix() ? "/" : "\\") + TMP_REPORT_FILE;
 
         FilePath rfile;
+	    rfile = new FilePath(workspace, TMP_REPORT_FILE + ".txt");
         try {
            // Analysis run started. ID plugin in Jenkins output.
             listener.getLogger().println("This is " + PLUGIN_NAME + " in version " + BUILD_NR);
             // Clear log file
-            rfile = new FilePath(workspace, TMP_REPORT_FILE + ".txt");
             if( rfile.delete() )
                listener.getLogger().println("Old log file erased.");
             rfile.touch(System.currentTimeMillis());
@@ -386,9 +389,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             listener.getLogger().println("InterruptedException caught during analysis run.");
          }
          if(exitCode == 0) { // activities after successful analysis run
+             try {
                 /* Read analysis summary and 
                    check whether Astrée shall fail the build due to reported errors etc */
-                AnalysisSummary summary = AnalysisSummary.readFromReportFile(reportfile + ".txt");
+                AnalysisSummary summary = AnalysisSummary.readFromReportFile(rfile);
                 if(      failonswitch != null && failonswitch.failOnErrors() 
                       && summary.getNumberOfErrors() > 0) {
                     listener.getLogger().println( "Errors reported! Number of errors: " + 
@@ -407,6 +411,14 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                                + summary.getNumberOfAlarms() > 0) ) {
                     build.setResult(hudson.model.Result.FAILURE);
                 }
+             }
+             catch (IOException e) {
+                 e.printStackTrace();
+                 listener.getLogger().println("IOException caught during read analysis summary.");
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+                 listener.getLogger().println("InterruptedException caught during read analysis summary.");
+             }
          } else {  // activities after unsuccessful analysis run
                 // If Astrée cannot be invoked, conservatively fail the build...   
                 build.setResult(hudson.model.Result.FAILURE);
@@ -524,6 +536,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  * Performs on-the-fly validation of the form field 'alauncher'.
  *
  * @param value           The value that the user has typed.
+ * @param project         unused
  * @return
  *      Indicates the outcome of the validation. This is sent to the browser.
  *      <br>
@@ -552,7 +565,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
 /**
  * Helper method to check whether a string contains an environment variable of form
- * <br><tt>${IDENTIFIER}</tt><br>
+ * <br>${IDENTIFIER}<br>
  *
  * @param   s    String to scan for environment variable expressions
  * @return  Outcome of the check as a boolean (true if such an expression
