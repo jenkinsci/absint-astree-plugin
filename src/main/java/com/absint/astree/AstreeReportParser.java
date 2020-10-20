@@ -95,6 +95,8 @@ public class AstreeReportParser extends IssueParser {
 
             // retrieve location of message
             Location location = parser.getLocations().get(locationID);
+            if(location == null)
+                location = new Location();
 
             // map message severity
             Severity severity;

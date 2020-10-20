@@ -46,7 +46,7 @@
     </table>
   </f:block>
   </f:entry>
-
+<!--
   <f:entry>
   <f:block>
     <table>
@@ -77,7 +77,7 @@
     </table>
   </f:block>
   </f:entry>
-
+-->
 
   </f:section>
 
