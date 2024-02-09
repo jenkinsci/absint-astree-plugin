@@ -1,0 +1,70 @@
+AbsInt Astrée
+=============
+
+Integration of AbsInt's static code analyzer https://www.absint.com/astree[Astrée] into the Jenkins continuous integration system.
+
+= Features
+
+* Configure an analyzer run as a Jenkins build step
+* Launch an Astrée analysis as a newly created analysis revision
+* Automatically mark a build step as erroneous depending on the categories of findings
+* Generate analysis reports directly in your Jenkins workspace
+* Access analysis results via the Jenkins web interface
+
+= Function
+
+The AbsInt Astrée plugin for Jenkins performs the following functions:
+
+* It transparently invokes Astrée during your build.
+* It can fail the build for different analysis outcomes (only on errors, also on alarms or also on data-flow anomalies reported).
+
+= Getting started
+
+* Install the plugin using the Plugin Manager, then restart Jenkins.
+* Go to the global configuration page (Manage Jenkins > Configure System).
+* Find the Astrée Configuration Section and specify the location of the AbsInt Launcher (alauncher) program and the Astrée server (hostname and port).
+
+= Project Setup and Project Configuration Settings
+
+* Create a Jenkins project, by creating it from scratch or by copying an existing project.
+* Under Configure, add a build step ‘Astrée Analysis Run.’
+
+== Basic Settings
+
+Specify an analysis setup by providing an absolute path to the DAX file containing the analysis specification and configuration.
+You may also provide the ID of an existing, preconfigured analysis on the Astrée server that serves as a revisioning base for the analyses of the current Jenkins project.
+The analysis, as configured via the supported DAX file, of a build is imported as a new revision into the project with this ID on the server, if such a project exists.
+Furthermore, specify on which analysis outcome, Astrée may fail a build.
+
+== Options
+
+You may furthermore configure your analysis run to:
+
+* Delete the project from the server after the analysis run
+* Generate text report containing the detailed preprocessing output in project workspace
+
+Now start your build.
+After the build has completed,
+
+* a summary with the analysis results will be printed to the console output in Jenkins and
+* analysis reports can be found at the location specified in the Astrée build step configuration or in the Jenkins project workspace in case no other location has been configured.
+
+= Troubleshooting
+
+When you encounter problems while using the plugin, please provide the
+following information:
+
+* The error message from the Console Output.
+* The Jenkins server log file (the location is dependent on the container
+    you use)
+* The content of ‘Manage Jenkins > System Information’ (_Jenkins
+    root_/systemInfo)
+* The configuration file for the job (Jenkins root/jobs/_job
+    name_/config.xml)
+* The global configuration file for Jenkins (Jenkins root/config.xml)
+* The Astrée analysis report and XML report files (if available).
+* In case of problems while saving the job configuration, a screenshot before submitting, the error message afterwards and the browser you are using.
+
+= Upgrading
+
+When upgrading, make sure that all jobs using the Astrée plugin are finished and not running during upgrade. For best results, restart your Jenkins after upgrade.
