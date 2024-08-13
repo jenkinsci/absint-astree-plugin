@@ -59,7 +59,7 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>warnings-ng</artifactId>
-      <version>8.1.0</version>
+      <version>10.4.1</version>
     </dependency>
     <!-- Override parent spotbugs-annotations dependency and use version as in warnings-ng -->
     <dependency>
