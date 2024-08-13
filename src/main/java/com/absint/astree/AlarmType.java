@@ -94,7 +94,7 @@ public class AlarmType {
     /**
      * set type
      *
-     * @param set alarm type
+     * @param type alarm type
      *
      * @return this
      */
