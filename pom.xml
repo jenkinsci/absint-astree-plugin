@@ -24,7 +24,7 @@
 
   <name>AbsInt Astrée Plugin for Jenkins</name>
   <description>Integration of AbsInt's Astrée into the Jenkins continuous integration system</description>
-  <url>https://wiki.jenkins-ci.org/pages/viewpage.action?pageId=99910545</url>
+  <url>https://github.com/jenkinsci/absint-astree-plugin</url>
 
   <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
 
