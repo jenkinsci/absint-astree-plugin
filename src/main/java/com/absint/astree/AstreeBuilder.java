@@ -289,9 +289,8 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
       */
     private String constructCommandLineCall(String reportfile, String preprocessoutput ) {
         String cmd    = getDescriptor().getAlauncher();
-        boolean c1610 = getDescriptor().getComp1610();
 
-        cmd = cmd  + " " + (c1610 ? "-a " : "") + "-b -s "                        +
+        cmd = cmd  + " -b -s "                        +
                      getDescriptor().getAstree_server()  + " "                     +
                      ((!getDescriptor().getUser().trim().equals("") && !getDescriptor().getPassword().trim().equals("")) ?
                        ( "--user " + getDescriptor().getUser() + "@" + getDescriptor().getPassword() ) : "")  +
@@ -305,22 +304,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                 cmd += " --preprocess-report-file " + "\"" + preprocessoutput + "\"";
         if(this.dropAnalysis)
                 cmd += " --drop";
-
-        if(!c1610)
-            return cmd;
-
-        if(this.genXMLOverview)
-                cmd += " --report-overview " + "\"" + output_dir + "/Overview.xml\"";
-        if(this.genXMLCoverage)
-                cmd += " --report-coverage " + "\"" + output_dir + "/Coverage.xml\"";
-        if(this.genXMLAlarmsByOccurence)
-                cmd += " --report-alarmsByOccurence " + "\"" + output_dir + "/AlarmsByOccurence.xml\"";
-        if(this.genXMLAlarmsByCategory)
-                cmd += " --report-alarmsByCategory " + "\"" + output_dir + "/AlarmsByCategory.xml\"";
-        if(this.genXMLAlarmsByFile)
-                cmd += " --report-alarmsByFile " + "\"" + output_dir + "/AlarmsByFile.xml\"";
-        if(this.genXMLRulechecks)
-                cmd += " --report-rulechecks " + "\"" + output_dir + "/Rulechecks.xml\"";
 
         return cmd; 
     }
@@ -476,7 +459,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
          *     Jenkins~~~Manage Jenkins~~~Configure System
          */
         private String alauncher;
-        private boolean comp1610;
         private String astree_server;
         private String user, password;
 
@@ -690,7 +672,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
             // To persist global configuration information,
             // set that to properties and call save().
             this.alauncher     = formData.getString("alauncher");
-            this.comp1610      = formData.getBoolean("comp1610");
             this.astree_server = formData.getString("astree_server");
             this.user          = formData.getString("user");
             this.password      = formData.getString("password");
@@ -716,15 +697,6 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 */
         public String getAlauncher() {
             return this.alauncher;
-        }
-
-/**
- * Returns the status of compatibility mode with release 16.10.
- *
- * @return boolean
-*/
-        public boolean getComp1610() {
-            return this.comp1610;
         }
 
 
