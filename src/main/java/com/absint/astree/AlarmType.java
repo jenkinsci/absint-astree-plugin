@@ -13,6 +13,7 @@ public class AlarmType {
         C,
         D,
         E,
+        N, // obsolete
         R,
         Unknown
     }

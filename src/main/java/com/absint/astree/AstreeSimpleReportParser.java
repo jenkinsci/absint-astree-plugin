@@ -3,6 +3,9 @@ package com.absint.astree;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import edu.hm.hafner.analysis.ParsingException;
+
 import org.w3c.dom.Node;
 
 import java.util.Map;
@@ -56,6 +59,7 @@ public class AstreeSimpleReportParser {
         parseMessages(doc, Message.MessageType.Alarm);
         parseMessages(doc, Message.MessageType.Error);
         parseMessages(doc, Message.MessageType.Note);
+        parseFindings(doc);
 
         // parse additional information needed by messages
         parseLocations(doc);
@@ -85,23 +89,23 @@ public class AstreeSimpleReportParser {
     public List<Message> getMessages() {
         return m_messages;
     }
-    
+
     /**
-     * get parsed locations
+     * get parsed location
      *
-     * @return parsed locations
+     * @return parsed location
      */
-    public Map<String, Location> getLocations() {
-        return m_locations;
+    public Location getLocation(String id) {
+        return m_locations.get(id);
     }
 
     /**
-     * get parsed files
+     * get parsed file
      *
-     * @return parsed files
+     * @return parsed file
      */
-    public Map<String, String> getFiles() {
-        return m_files;
+    public String getFile(String id) {
+        return m_files.get(id);
     }
 
     /**
@@ -114,22 +118,22 @@ public class AstreeSimpleReportParser {
     }
 
     /**
-     * get parsed alarm types
+     * get parsed alarm type
      *
-     * @return parsed alarm types
+     * @return parsed alarm type
      */
-    public Map<String, AlarmType> getAlarmTypes() {
-        return m_types;
-    }    
- 
+    public AlarmType getAlarmType(String id) {
+        return m_types.get(id);
+    }
+
     /**
-     * get parsed alarm categories
+     * get parsed alarm category
      *
-     * @return parsed alarm categories
+     * @return parsed alarm category
      */
-    public Map<String, String> getCategories() {
-        return m_categories;
-    }   
+    public String getCategory(String id) {
+        return m_categories.get(id);
+    }
 
     /**
      * parse all messages from specific tpye out of report
@@ -159,6 +163,38 @@ public class AstreeSimpleReportParser {
                 .setType(type)
                 .setContext(messageElement.getAttribute("context"))
                 .setText(messageText.toString());
+            m_messages.add(message);
+        }
+    }
+
+    private void parseFindings(Document doc) {
+        final NodeList messages = doc.getElementsByTagName("finding");
+        for (int i = 0; i < messages.getLength(); ++i) {
+            final Element element = (Element) messages.item(i);
+            final Message message = new Message();
+
+            final NodeList lines = element.getElementsByTagName("textline");
+            final StringBuilder stringBuilder = new StringBuilder();
+            for (int y = 0; y < lines.getLength(); y++) {
+                final Element line = (Element) lines.item(y);
+                if (0 < stringBuilder.length())
+                    stringBuilder.append("<br>");
+                stringBuilder.append(line.getTextContent());
+            }
+ 
+            message.setLocationID(element.getAttribute("location_id"))
+                .setTypeID(element.getAttribute("key"))
+                .setContext(element.getAttribute("context"))
+                .setText(stringBuilder.toString());
+
+            if ("alarm".equals(element.getAttribute("kind"))) {
+                message.setType(Message.MessageType.Alarm);
+            } else if ("error".equals(element.getAttribute("kind"))) {
+                message.setType(Message.MessageType.Error);
+            } else {
+                throw new ParsingException("Unknown finding kind " + element.getAttribute("kind"));
+            }
+
             m_messages.add(message);
         }
     }
@@ -252,6 +288,21 @@ public class AstreeSimpleReportParser {
                 .setType(alarmType.getTextContent());
             m_types.put(alarmType.getAttribute("id"), type);
         }
+
+        final NodeList findingCategories = doc.getElementsByTagName("finding_category");
+        for (int i = 0; i < findingCategories.getLength(); i++) {
+            final Element element = (Element) findingCategories.item(i);
+
+            final AlarmType type = new AlarmType();
+            type.setCategoryID(element.getAttribute("category_group_id"));
+            type.setType(element.getTextContent());
+            if ("error".equals(element.getAttribute("finding_kind"))) {
+                type.setAlarmClass("E");
+            } else {
+                type.setAlarmClass(element.getAttribute("class"));
+            }
+            m_types.put(element.getAttribute("finding_key"), type);
+        }
     }
 
     /**
@@ -267,6 +318,12 @@ public class AstreeSimpleReportParser {
 
             m_categories.put(alarmCategory.getAttribute("id"), 
                     alarmCategory.getTextContent());
+        }
+
+        final NodeList categoryGroups = doc.getElementsByTagName("category_group");
+        for (int i = 0; i < categoryGroups.getLength(); ++i) {
+            final Element element = (Element)categoryGroups.item(i);
+            m_categories.put(element.getAttribute("id"), element.getTextContent());
         }
     }
 }
