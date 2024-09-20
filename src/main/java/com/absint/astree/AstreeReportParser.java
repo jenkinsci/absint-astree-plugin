@@ -3,21 +3,13 @@ package com.absint.astree;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-
-import edu.hm.hafner.analysis.Issue;
 import edu.hm.hafner.analysis.IssueParser;
 import edu.hm.hafner.analysis.IssueBuilder;
 import edu.hm.hafner.analysis.ParsingException;
 import edu.hm.hafner.analysis.ReaderFactory;
 import edu.hm.hafner.analysis.Report;
 import edu.hm.hafner.analysis.Severity;
-
 
 /**
  * Parser for AbsInt Astree XML reports.
@@ -39,7 +31,7 @@ public class AstreeReportParser extends IssueParser {
     public boolean accepts(final ReaderFactory readerFactory) {
         return isXmlFile(readerFactory);
     }
-    
+
     /**
      * Parse a AbsInt Astree XML report.
      *
@@ -51,10 +43,10 @@ public class AstreeReportParser extends IssueParser {
     public Report parse(final ReaderFactory readerFactory) throws ParsingException {
         // read the document
         Document doc = readerFactory.readDocument();
-        
+
         // create template with basic settings for issues
         IssueBuilder issueBuilder = new IssueBuilder();
-        
+
         // use project description as reference
         String reference = "";
         NodeList projects = doc.getElementsByTagName("project");
@@ -70,6 +62,7 @@ public class AstreeReportParser extends IssueParser {
 
         // create new report
         Report report = new Report();
+        report.setOriginReportFile(readerFactory.getFileName());
 
         // process the messages
         parser.getMessages().stream().forEach((message) -> {
@@ -90,11 +83,22 @@ public class AstreeReportParser extends IssueParser {
             }
 
             // build category out of message type and category
-            AlarmType type = parser.getAlarmTypes().get(message.getTypeID());
-            String category = type.getType()  + " [" + parser.getCategories().get(type.getCategoryID()) +"]";
+            final AlarmType type = parser.getAlarmType(message.getTypeID());
+            if (type == null) {
+                throw new ParsingException("Missing finding category " + message.getTypeID());
+            }
+            final String category = parser.getCategory(type.getCategoryID());
+            if (category == null) {
+                throw new ParsingException("Missing finding group " + type.getCategoryID());
+            }
+            final StringBuilder categoryBuilder = new StringBuilder();
+            categoryBuilder.append(type.getType());
+            categoryBuilder.append(" [");
+            categoryBuilder.append(category);
+            categoryBuilder.append(']');
 
             // retrieve location of message
-            Location location = parser.getLocations().get(locationID);
+            Location location = parser.getLocation(locationID);
             if(location == null)
                 location = new Location();
 
@@ -116,18 +120,20 @@ public class AstreeReportParser extends IssueParser {
 
             // create new issue
             issueBuilder.setMessage(message.getText())
-                .setFileName(parser.getFiles().get(location.getFileID()))
+                .setFileName(parser.getFile(location.getFileID()))
                 .setLineStart(location.getLineStart())
                 .setLineEnd(location.getLineEnd())
                 .setColumnStart(location.getColStart())
                 .setColumnEnd(location.getColEnd())
-                .setCategory(category)
+                .setCategory(categoryBuilder.toString())
                 .setDescription(description)
                 .setSeverity(severity);
 
             // add issue to report
             report.add(issueBuilder.build());
         });
+
+        issueBuilder.close();
 
         return report;
     }
