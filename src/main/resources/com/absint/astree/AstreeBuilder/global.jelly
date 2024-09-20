@@ -17,9 +17,6 @@
       description="Specify the path to your local a³ for C client (a3c)">
       <f:textbox />
     </f:entry>
-    <f:entry title="Run in compatibility mode with release 16.10" field="comp1610">
-     <f:checkbox/>
-    </f:entry>
     <f:entry title="Astrée Server" field="astree_server"
       description="Specify the URL  of your Astrée Server as [hostname]:[port]">
       <f:textbox />
