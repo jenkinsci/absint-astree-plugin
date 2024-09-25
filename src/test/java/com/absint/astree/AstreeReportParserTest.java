@@ -66,7 +66,7 @@ public class AstreeReportParserTest {
             assertTrue(fileName, categories.contains("Integer division by zero [Division or modulo by zero]"));
             assertTrue(fileName, categories.contains("Use of uninitialized variables [Uninitialized variables]"));
             assertTrue(fileName, categories.contains("Overflow in conversion (with unpredictable result) [Invalid ranges and overflows]"));
-            if (fileName.compareTo("report-20.04.xml") <= 0) {
+            if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertTrue(fileName, categories.contains("Definite runtime error [Errors]"));
             } else {
                 assertTrue(fileName, categories.contains("Analysis stopped [Errors]"));
@@ -250,14 +250,18 @@ public class AstreeReportParserTest {
 
             final Issue error1 = report.get(120);
             assertEquals(fileName, Severity.ERROR, error1.getSeverity());
-            if (fileName.compareTo("report-20.04.xml") <= 0) {
+            if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertEquals(fileName, "Definite runtime error [Errors]", error1.getCategory());
                 assertEquals(fileName, "preprocessed/src/scenarios.c", error1.getFileName());
                 assertEquals(fileName, 73, error1.getLineStart());
                 assertEquals(fileName, 8, error1.getColumnStart());
                 assertEquals(fileName, 73, error1.getLineEnd());
                 assertEquals(fileName, 25, error1.getColumnEnd());
-                assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage());
+                if (fileName.compareTo("report-20.04.xml") <= 0) {
+                    assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage());
+                } else {
+                    assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
+                }
             } else {
                 assertEquals(fileName, "Analysis stopped [Errors]", error1.getCategory());
                 assertEquals(fileName, "preprocessed/src/dhry/Proc7.c", error1.getFileName());
@@ -270,6 +274,8 @@ public class AstreeReportParserTest {
             assertEquals(fileName, "n/A", error1.getReference());
             if (fileName.compareTo("report-20.04.xml") <= 0) {
                 assertTrue(fileName, error1.getDescription().startsWith("<p>Context:</p><pre>l"));
+            } else if (fileName.compareTo("report-20.10.xml") <= 0) {
+                assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>ArrayBlock[i] = i;\n~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
             } else {
                 assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
             }
@@ -277,7 +283,7 @@ public class AstreeReportParserTest {
 
             final Issue error2 = report.get(124);
             assertEquals(fileName, Severity.ERROR, error2.getSeverity());
-            if (fileName.compareTo("report-20.04.xml") <= 0) {
+            if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertEquals(fileName, "Definite runtime error [Errors]", error2.getCategory());
             } else {
                 assertEquals(fileName, "Analysis stopped [Errors]", error2.getCategory());
@@ -289,11 +295,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 22, error2.getColumnEnd());
             if (fileName.compareTo("report-20.04.xml") <= 0) {
                 assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage());
+            } else if (fileName.compareTo("report-20.10.xml") <= 0) {
+                assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
             } else {
                 assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
             }
             assertEquals(fileName, "n/A", error2.getReference());
-            if (fileName.equals("report-19.10.xml") || fileName.equals("report-20.04.xml")) {
+            if (fileName.compareTo("report-20.04.xml") <= 0) {
                 assertTrue(fileName, error2.getDescription().startsWith("<p>Context:</p><pre>l"));
             } else {
                 assertTrue(fileName, error2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
