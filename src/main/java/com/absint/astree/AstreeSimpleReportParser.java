@@ -1,18 +1,16 @@
 package com.absint.astree;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import edu.hm.hafner.analysis.ParsingException;
 
-import org.w3c.dom.Node;
-
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-
 
 /**
  * Parser which simply parses Astree XML reports into data structures whithout
@@ -109,12 +107,12 @@ public class AstreeSimpleReportParser {
     }
 
     /**
-     * get parsed code snippets
+     * get parsed code snippet
      *
-     * @return parsed files
+     * @return parsed code snippet
      */
-    public Map<String, String> getCodeSnippets() {
-        return m_codeSnippets;
+    public String getCodeSnippet(String locationId) {
+        return m_codeSnippets.get(locationId);
     }
 
     /**
@@ -146,7 +144,7 @@ public class AstreeSimpleReportParser {
         for (int i = 0; i < messages.getLength(); i++) {
             Element messageElement = (Element)messages.item(i);
             Message message = new Message();
- 
+
             // message text
             NodeList lines = messageElement.getElementsByTagName("textline");
             StringBuilder messageText = new StringBuilder();
@@ -155,9 +153,9 @@ public class AstreeSimpleReportParser {
                 if (0 < messageText.length()) {
                     messageText.append("<br>");
                 }
-                messageText.append(line.getTextContent());
+                messageText.append(StringEscapeUtils.escapeHtml4(line.getTextContent()));
             }
- 
+
             message.setLocationID(messageElement.getAttribute("location_id"))
                 .setTypeID(messageElement.getAttribute("type"))
                 .setType(type)
@@ -179,9 +177,9 @@ public class AstreeSimpleReportParser {
                 final Element line = (Element) lines.item(y);
                 if (0 < stringBuilder.length())
                     stringBuilder.append("<br>");
-                stringBuilder.append(line.getTextContent());
+                stringBuilder.append(StringEscapeUtils.escapeHtml4(line.getTextContent()));
             }
- 
+
             message.setLocationID(element.getAttribute("location_id"))
                 .setTypeID(element.getAttribute("key"))
                 .setContext(element.getAttribute("context"))
@@ -262,9 +260,9 @@ public class AstreeSimpleReportParser {
             for (int y = 0; y < lines.getLength(); y++) {
                 Element line = (Element)lines.item(y);
                 if (0 < code.length()) {
-                    code.append("<br>");
+                    code.append("\n");
                 }
-                code.append(line.getTextContent());
+                code.append(StringEscapeUtils.escapeHtml4(line.getTextContent()));
             }
 
             m_codeSnippets.put(snippet.getAttribute("location_id"), code.toString());
