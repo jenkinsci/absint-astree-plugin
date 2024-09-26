@@ -63,7 +63,7 @@ import java.util.regex.Matcher;
  */
 public class AstreeBuilder extends Builder implements SimpleBuildStep {
     private static final String PLUGIN_NAME = "Astrée for C Jenkins PlugIn";
-    private static final String BUILD_NR    = "18.10";
+    private static final String BUILD_NR    = "24.10";
 
     private static final String TMP_REPORT_FILE = "absint_astree_analysis_report";
     private static final String TMP_PREPROCESS_OUTPUT = "absint_astree_preprocess_output.txt";
@@ -569,8 +569,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  **/
         public FormValidation doCheckDax_file(@QueryParameter String value)
                 throws IOException, ServletException {
-            if(value == null || value.trim().equals("") )
-               return FormValidation.warning("No file specified.");
+            if  ( 
+                    (value == null || value.trim().equals(""))
+                )
+               return FormValidation.warning("No DAX file specified. Only ID will be used.");
 
             if(containsEnvVars(value)) {
                return FormValidation.warning("The specified path contains an environment variable, please make sure the constructed paths are correct.");
@@ -603,8 +605,10 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  **/
         public FormValidation doCheckAnalysis_id(@QueryParameter String value)
                 throws IOException, ServletException {
-            if(value == null || value.trim().equals("") )
-               return FormValidation.warning("No ID specified.");
+            if  ( 
+                    (value == null || value.trim().equals(""))
+                )            
+               return FormValidation.warning("No ID specified. Only DAX file will be used.");
 
             if(containsEnvVars(value)) {
                return FormValidation.warning("The ID contains an environment variable, please make sure that the constructed IDs are valid.");
