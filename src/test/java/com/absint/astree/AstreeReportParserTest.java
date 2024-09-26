@@ -66,7 +66,7 @@ public class AstreeReportParserTest {
             assertTrue(fileName, categories.contains("Integer division by zero [Division or modulo by zero]"));
             assertTrue(fileName, categories.contains("Use of uninitialized variables [Uninitialized variables]"));
             assertTrue(fileName, categories.contains("Overflow in conversion (with unpredictable result) [Invalid ranges and overflows]"));
-            if (fileName.compareTo("report-20.04.xml") <= 0) {
+            if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertTrue(fileName, categories.contains("Definite runtime error [Errors]"));
             } else {
                 assertTrue(fileName, categories.contains("Analysis stopped [Errors]"));
@@ -113,6 +113,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 23, alarm1.getColumnStart());
             assertEquals(fileName, 20, alarm1.getLineEnd());
             assertEquals(fileName, 26, alarm1.getColumnEnd());
+            assertEquals(fileName, "ALARM (R): check parameter-name failed (violates M2012.8.2-required)", alarm1.getMessage());
+            if (fileName.equals("report-18.04.xml")) {
+                assertEquals(fileName, "n/a", alarm1.getReference());
+            } else {
+                assertEquals(fileName, "n/A", alarm1.getReference());
+            }
+            assertEquals(fileName, "", alarm1.getDescription());
 
             final Issue alarm2 = report.get(33);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm2.getSeverity());
@@ -126,6 +133,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 4, alarm2.getColumnStart());
             assertEquals(fileName, 134, alarm2.getLineEnd());
             assertEquals(fileName, 13, alarm2.getColumnEnd());
+            assertEquals(fileName, "ALARM (R): check unreachable-code failed (violates M2012.2.1-required)", alarm2.getMessage());
+            if (fileName.equals("report-18.04.xml")) {
+                assertEquals(fileName, "n/a", alarm2.getReference());
+            } else {
+                assertEquals(fileName, "n/A", alarm2.getReference());
+            }
+            assertEquals(fileName, "", alarm2.getDescription());
 
             final Issue error1 = report.get(34);
             assertEquals(fileName, Severity.ERROR, error1.getSeverity());
@@ -135,6 +149,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 8, error1.getColumnStart());
             assertEquals(fileName, 73, error1.getLineEnd());
             assertEquals(fileName, 25, error1.getColumnEnd());
+            assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage());
+            if (fileName.equals("report-18.04.xml")) {
+                assertEquals(fileName, "n/a", error1.getReference());
+            } else {
+                assertEquals(fileName, "n/A", error1.getReference());
+            }
+            assertEquals(fileName, "<p>Context:</p><pre>l32#call#main@48,l34#loop@72=11/12</pre>", error1.getDescription());
 
             final Issue error2 = report.get(35);
             assertEquals(fileName, Severity.ERROR, error2.getSeverity());
@@ -144,6 +165,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 8, error2.getColumnStart());
             assertEquals(fileName, 78, error2.getLineEnd());
             assertEquals(fileName, 16, error2.getColumnEnd());
+            assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage());
+            if (fileName.equals("report-18.04.xml")) {
+                assertEquals(fileName, "n/a", error2.getReference());
+            } else {
+                assertEquals(fileName, "n/A", error2.getReference());
+            }
+            assertEquals(fileName, "<p>Context:</p><pre>l32#call#main@48,l37#loop@77=11/12</pre>", error2.getDescription());
 
             final Issue note1 = report.get(36);
             assertEquals(fileName, Severity.WARNING_LOW, note1.getSeverity());
@@ -153,6 +181,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 1, note1.getColumnStart());
             assertEquals(fileName, 135, note1.getLineEnd());
             assertEquals(fileName, 1, note1.getColumnEnd());
+            assertEquals(fileName, "NOTE: Analyzed entry-point main never returns.", note1.getMessage());
+            if (fileName.equals("report-18.04.xml")) {
+                assertEquals(fileName, "n/a", note1.getReference());
+            } else {
+                assertEquals(fileName, "n/A", note1.getReference());
+            }
+            assertEquals(fileName, "", note1.getDescription());
 
             final Issue note2 = report.get(37);
             assertEquals(fileName, Severity.WARNING_LOW, note2.getSeverity());
@@ -162,6 +197,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 3, note2.getColumnStart());
             assertEquals(fileName, 126, note2.getLineEnd());
             assertEquals(fileName, 5, note2.getColumnEnd());
+            assertEquals(fileName, "NOTE: Loop may be unbounded", note2.getMessage());
+            if (fileName.equals("report-18.04.xml")) {
+                assertEquals(fileName, "n/a", note2.getReference());
+            } else {
+                assertEquals(fileName, "n/A", note2.getReference());
+            }
+            assertEquals(fileName, "", note2.getDescription());
         } else if (fileName.compareTo("report-21.04i2.xml") <= 0) {
             assertEquals(fileName, 125, report.size());
 
@@ -173,6 +215,21 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 44, alarm1.getColumnStart());
             assertEquals(fileName, 77, alarm1.getLineEnd());
             assertEquals(fileName, 54, alarm1.getColumnEnd());
+            if (fileName.compareTo("report-19.10.xml") <= 0) {
+                assertEquals(fileName, "[ conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R): check incompatible-object-pointer-conversion failed (violates A.1.11)", alarm1.getMessage());
+            } else if (fileName.compareTo("report-20.04.xml") <= 0) {
+                assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R): check incompatible-object-pointer-conversion failed (violates A.1.11)", alarm1.getMessage());
+            } else if (fileName.compareTo("report-21.04.xml") <= 0) {
+                assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage());
+            } else {
+                assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType *&gt; (aka &lt;struct Record *&gt;) to &lt;char *&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage());
+            }
+            assertEquals(fileName, "n/A", alarm1.getReference());
+            assertEquals(fileName,
+                "<p>Code:</p><pre>" +
+                "memcpy_x(&amp;((*(PtrParIn-&gt;PtrComp))), &amp;(*PtrGlb), sizeof((*(PtrParIn-&gt;PtrComp))));\n" +
+                "                                    ~~~~~~~~~~</pre>",
+                alarm1.getDescription());
 
             final Issue alarm2 = report.get(119);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm2.getSeverity());
@@ -182,16 +239,29 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 12, alarm2.getColumnStart());
             assertEquals(fileName, 78, alarm2.getLineEnd());
             assertEquals(fileName, 22, alarm2.getColumnEnd());
+            if (fileName.compareTo("report-20.04.xml") <= 0) {
+                assertEquals(fileName, "ALARM (A): integer division by zero {0}", alarm2.getMessage());
+            } else {
+                assertEquals(fileName, "ALARM (A) int_division_by_zero: divisor in {0}", alarm2.getMessage());
+            }
+            assertEquals(fileName, "n/A", alarm2.getReference());
+            assertTrue(fileName, alarm2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n         ~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+            assertTrue(fileName, alarm2.getDescription().endsWith("#call#Proc7</pre>"));
 
             final Issue error1 = report.get(120);
             assertEquals(fileName, Severity.ERROR, error1.getSeverity());
-            if (fileName.compareTo("report-20.04.xml") <= 0) {
+            if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertEquals(fileName, "Definite runtime error [Errors]", error1.getCategory());
                 assertEquals(fileName, "preprocessed/src/scenarios.c", error1.getFileName());
                 assertEquals(fileName, 73, error1.getLineStart());
                 assertEquals(fileName, 8, error1.getColumnStart());
                 assertEquals(fileName, 73, error1.getLineEnd());
                 assertEquals(fileName, 25, error1.getColumnEnd());
+                if (fileName.compareTo("report-20.04.xml") <= 0) {
+                    assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage());
+                } else {
+                    assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
+                }
             } else {
                 assertEquals(fileName, "Analysis stopped [Errors]", error1.getCategory());
                 assertEquals(fileName, "preprocessed/src/dhry/Proc7.c", error1.getFileName());
@@ -199,11 +269,21 @@ public class AstreeReportParserTest {
                 assertEquals(fileName, 3, error1.getColumnStart());
                 assertEquals(fileName, 78, error1.getLineEnd());
                 assertEquals(fileName, 22, error1.getColumnEnd());
+                assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
             }
+            assertEquals(fileName, "n/A", error1.getReference());
+            if (fileName.compareTo("report-20.04.xml") <= 0) {
+                assertTrue(fileName, error1.getDescription().startsWith("<p>Context:</p><pre>l"));
+            } else if (fileName.compareTo("report-20.10.xml") <= 0) {
+                assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>ArrayBlock[i] = i;\n~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+            } else {
+                assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+            }
+            assertTrue(fileName, error1.getDescription().endsWith("</pre>"));
 
             final Issue error2 = report.get(124);
             assertEquals(fileName, Severity.ERROR, error2.getSeverity());
-            if (fileName.compareTo("report-20.04.xml") <= 0) {
+            if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertEquals(fileName, "Definite runtime error [Errors]", error2.getCategory());
             } else {
                 assertEquals(fileName, "Analysis stopped [Errors]", error2.getCategory());
@@ -213,6 +293,20 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 3, error2.getColumnStart());
             assertEquals(fileName, 78, error2.getLineEnd());
             assertEquals(fileName, 22, error2.getColumnEnd());
+            if (fileName.compareTo("report-20.04.xml") <= 0) {
+                assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage());
+            } else if (fileName.compareTo("report-20.10.xml") <= 0) {
+                assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
+            } else {
+                assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
+            }
+            assertEquals(fileName, "n/A", error2.getReference());
+            if (fileName.compareTo("report-20.04.xml") <= 0) {
+                assertTrue(fileName, error2.getDescription().startsWith("<p>Context:</p><pre>l"));
+            } else {
+                assertTrue(fileName, error2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+            }
+            assertTrue(fileName, error2.getDescription().endsWith("</pre>"));
         } else {
             assertEquals(fileName, 127, report.size());
 
@@ -224,6 +318,13 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 44, alarm1.getColumnStart());
             assertEquals(fileName, 77, alarm1.getLineEnd());
             assertEquals(fileName, 54, alarm1.getColumnEnd());
+            assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType *&gt; (aka &lt;struct Record *&gt;) to &lt;char *&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage());
+            assertEquals(fileName, "n/A", alarm1.getReference());
+            assertEquals(fileName,
+                "<p>Code:</p><pre>" +
+                "memcpy_x(&amp;((*(PtrParIn-&gt;PtrComp))), &amp;(*PtrGlb), sizeof((*(PtrParIn-&gt;PtrComp))));\n" +
+                "                                    ~~~~~~~~~~</pre>",
+                alarm1.getDescription());
 
             final Issue error1 = report.get(120);
             assertEquals(fileName, Severity.ERROR, error1.getSeverity());
@@ -233,6 +334,10 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 3, error1.getColumnStart());
             assertEquals(fileName, 78, error1.getLineEnd());
             assertEquals(fileName, 22, error1.getColumnEnd());
+            assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
+            assertEquals(fileName, "n/A", error1.getReference());
+            assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+            assertTrue(fileName, error1.getDescription().endsWith("#call#Proc7</pre>"));
 
             final Issue error2 = report.get(124);
             assertEquals(fileName, Severity.ERROR, error2.getSeverity());
@@ -242,6 +347,10 @@ public class AstreeReportParserTest {
             assertEquals(fileName, 3, error2.getColumnStart());
             assertEquals(fileName, 78, error2.getLineEnd());
             assertEquals(fileName, 22, error2.getColumnEnd());
+            assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
+            assertEquals(fileName, "n/A", error2.getReference());
+            assertTrue(fileName, error2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+            assertTrue(fileName, error2.getDescription().endsWith("#call#Proc7</pre>"));
         }
     }
 }

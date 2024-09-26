@@ -70,16 +70,20 @@ public class AstreeReportParser extends IssueParser {
             String locationID = message.getLocationID();
 
             // build description out of code snippet
-            String description = "";
-            String code = parser.getCodeSnippets().get(locationID);
-            if (null != code && !code.isEmpty()) {
-                description += "<p>Code:<br><code>" + code.replaceAll(" ", "&nbsp;") + "</code></p>";
+            final StringBuilder description = new StringBuilder();
+            final String code = parser.getCodeSnippet(locationID);
+            if (code != null && !code.isEmpty()) {
+                description.append("<p>Code:</p><pre>");
+                description.append(code);
+                description.append("</pre>");
             }
 
             // build description out of context
-            String context = message.getContext(); 
-            if (null != context && !context.isEmpty()) {
-                description += "<p>Context:<br><code>" + context.replaceAll(" ", "&nbsp;") + "</code></p>";
+            final String context = message.getContext(); 
+            if (context != null && !context.isEmpty()) {
+                description.append("<p>Context:</p><pre>");
+                description.append(context);
+                description.append("</pre>");
             }
 
             // build category out of message type and category
@@ -126,7 +130,7 @@ public class AstreeReportParser extends IssueParser {
                 .setColumnStart(location.getColStart())
                 .setColumnEnd(location.getColEnd())
                 .setCategory(categoryBuilder.toString())
-                .setDescription(description)
+                .setDescription(description.toString())
                 .setSeverity(severity);
 
             // add issue to report
