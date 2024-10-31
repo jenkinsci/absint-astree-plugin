@@ -1,11 +1,11 @@
 package com.absint.astree;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
-import edu.hm.hafner.analysis.ParsingException;
+import com.absint.astree.Message.MessageType;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * Parser which simply parses Astree XML reports into data structures whithout
  * interconnecting the elements
  */
-public class AstreeSimpleReportParser {
+public class AstreeSimpleReportParser extends DefaultHandler {
     /**
      * parsed alarm categories
      */
@@ -47,37 +47,14 @@ public class AstreeSimpleReportParser {
      */
     private List<Message> m_messages = new ArrayList<Message>();
 
-    /**
-     * parse document into internal data structures
-     *
-     * @param doc document to parse
-     */
-    public void parse(Document doc) {
-        // parse and build report for all message types
-        parseMessages(doc, Message.MessageType.Alarm);
-        parseMessages(doc, Message.MessageType.Error);
-        parseMessages(doc, Message.MessageType.Note);
-        parseFindings(doc);
+    private String projectDescription;
 
-        // parse additional information needed by messages
-        parseLocations(doc);
-        parseFiles(doc);
-        parseCodeSnippets(doc);
-        parseAlarmTypes(doc);
-        parseAlarmCategories(doc);
-    }
-
-    /**
-     * clear all parsed data
-     */
-    public void clear() {
-        m_messages.clear();
-        m_locations.clear();
-        m_files.clear();
-        m_codeSnippets.clear();
-        m_types.clear();
-        m_categories.clear();
-    }
+    private String currentId;
+    private Message currentMessage;
+    private AlarmType currentAlarmType;
+    private boolean collectCurrentCharacters = false;
+    private StringBuilder currentCharacters = new StringBuilder();
+    private StringBuilder auxiliaryStringBuilder = new StringBuilder();
 
     /**
      * get parsed messages
@@ -133,195 +110,118 @@ public class AstreeSimpleReportParser {
         return m_categories.get(id);
     }
 
-    /**
-     * parse all messages from specific tpye out of report
-     *
-     * @param doc report to parse
-     * @param type message type to parse
-     */
-    private void parseMessages(Document doc, Message.MessageType type) {
-        NodeList messages = doc.getElementsByTagName(type.toString());
-        for (int i = 0; i < messages.getLength(); i++) {
-            Element messageElement = (Element)messages.item(i);
-            Message message = new Message();
-
-            // message text
-            NodeList lines = messageElement.getElementsByTagName("textline");
-            StringBuilder messageText = new StringBuilder();
-            for (int y = 0; y < lines.getLength(); y++) {
-                Element line = (Element)lines.item(y);
-                if (0 < messageText.length()) {
-                    messageText.append("<br>");
-                }
-                messageText.append(StringEscapeUtils.escapeHtml4(line.getTextContent()));
-            }
-
-            message.setLocationID(messageElement.getAttribute("location_id"))
-                .setTypeID(messageElement.getAttribute("type"))
-                .setType(type)
-                .setContext(messageElement.getAttribute("context"))
-                .setText(messageText.toString());
-            m_messages.add(message);
-        }
+    public String getProjectDescription() {
+        return projectDescription;
     }
 
-    private void parseFindings(Document doc) {
-        final NodeList messages = doc.getElementsByTagName("finding");
-        for (int i = 0; i < messages.getLength(); ++i) {
-            final Element element = (Element) messages.item(i);
-            final Message message = new Message();
-
-            final NodeList lines = element.getElementsByTagName("textline");
-            final StringBuilder stringBuilder = new StringBuilder();
-            for (int y = 0; y < lines.getLength(); y++) {
-                final Element line = (Element) lines.item(y);
-                if (0 < stringBuilder.length())
-                    stringBuilder.append("<br>");
-                stringBuilder.append(StringEscapeUtils.escapeHtml4(line.getTextContent()));
-            }
-
-            message.setLocationID(element.getAttribute("location_id"))
-                .setTypeID(element.getAttribute("key"))
-                .setContext(element.getAttribute("context"))
-                .setText(stringBuilder.toString());
-
-            if ("alarm".equals(element.getAttribute("kind"))) {
-                message.setType(Message.MessageType.Alarm);
-            } else if ("error".equals(element.getAttribute("kind"))) {
-                message.setType(Message.MessageType.Error);
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if (qName.equals("alarm_category") || qName.equals("category_group")) {
+            currentId = attributes.getValue("id");
+            collectCurrentCharacters = true;
+        } else if (qName.equals("alarm_type")) {
+            currentId = attributes.getValue("id");
+            currentAlarmType = new AlarmType();
+            currentAlarmType.setCategoryID(attributes.getValue("category_id"));
+            currentAlarmType.setAlarmClass(attributes.getValue("class"));
+            collectCurrentCharacters = true;
+        } else if (qName.equals("finding_category")) {
+            currentId = attributes.getValue("finding_key");
+            currentAlarmType = new AlarmType();
+            currentAlarmType.setCategoryID(attributes.getValue("category_group_id"));
+            if (attributes.getValue("finding_kind").equals("error")) {
+                currentAlarmType.setAlarmClass("E");
             } else {
-                throw new ParsingException("Unknown finding kind " + element.getAttribute("kind"));
+                currentAlarmType.setAlarmClass(attributes.getValue("class"));
             }
-
-            m_messages.add(message);
-        }
-    }
-
-    /**
-     * parse all locations out of report
-     *
-     * @param doc report to parse
-     */
-    private void parseLocations(Document doc) {
-        NodeList locations = doc.getElementsByTagName("location");
-        for (int i = 0; i < locations.getLength(); i++) {
-            Element locationElement = (Element)locations.item(i);
-            Location location = new Location();
-            
-            // location information
-            location.setLineStart(locationElement.getAttribute("p_start_line"))
-                .setLineEnd(locationElement.getAttribute("p_end_line"))
-                .setColStart(locationElement.getAttribute("p_start_col"))
-                .setColEnd(locationElement.getAttribute("p_end_col"));
-
-            // original location information
-            location.setOrigLineStart(locationElement.getAttribute("o_start_line"))
-                .setOrigLineEnd(locationElement.getAttribute("o_end_line"))
-                .setOrigColStart(locationElement.getAttribute("o_start_col"))
-                .setOrigColEnd(locationElement.getAttribute("o_end_col"));
-
-            // retrieve file information
-            location.setFileID(locationElement.getAttribute("p_file"))
-                .setOrigFileID(locationElement.getAttribute("o_file"));
-
-            m_locations.put(locationElement.getAttribute("id"), location);
-        }
-    }
-     
-    /**
-     * parse all files out of report
-     *
-     * @param doc report to parse
-     */
-    private void parseFiles(Document doc) {
-        // find all files and add it
-        NodeList files = doc.getElementsByTagName("file");
-        for (int i = 0; i < files.getLength(); i++) {
-            Element file = (Element)files.item(i);
-
-            m_files.put(file.getAttribute("id"), file.getAttribute("name"));
-        }
-    }
-
-    /**
-     * parse all code snippets out of report
-     *
-     * @param doc report to parse
-     */
-    private void parseCodeSnippets(Document doc) {
-        // find all code snippets and add it
-        NodeList snippets = doc.getElementsByTagName("code-snippet");
-        for (int i = 0; i < snippets.getLength(); i++) {
-            Element snippet = (Element)snippets.item(i);
-
-            // code lines
-            StringBuilder code = new StringBuilder();
-            NodeList lines = snippet.getElementsByTagName("line");
-            for (int y = 0; y < lines.getLength(); y++) {
-                Element line = (Element)lines.item(y);
-                if (0 < code.length()) {
-                    code.append("\n");
-                }
-                code.append(StringEscapeUtils.escapeHtml4(line.getTextContent()));
-            }
-
-            m_codeSnippets.put(snippet.getAttribute("location_id"), code.toString());
-        }
-    }
-
-    /**
-     * parse all alarm types out of report
-     *
-     * @param doc report to parse
-     */
-    private void parseAlarmTypes(Document doc) {
-        // find all alarm types and add it
-        NodeList alarmTypes = doc.getElementsByTagName("alarm_type");
-        for (int i = 0; i < alarmTypes.getLength(); i++) {
-            Element alarmType = (Element)alarmTypes.item(i);
-
-            AlarmType type = new AlarmType();
-            type.setCategoryID(alarmType.getAttribute("category_id"))
-                .setAlarmClass(alarmType.getAttribute("class"))
-                .setType(alarmType.getTextContent());
-            m_types.put(alarmType.getAttribute("id"), type);
-        }
-
-        final NodeList findingCategories = doc.getElementsByTagName("finding_category");
-        for (int i = 0; i < findingCategories.getLength(); i++) {
-            final Element element = (Element) findingCategories.item(i);
-
-            final AlarmType type = new AlarmType();
-            type.setCategoryID(element.getAttribute("category_group_id"));
-            type.setType(element.getTextContent());
-            if ("error".equals(element.getAttribute("finding_kind"))) {
-                type.setAlarmClass("E");
+            collectCurrentCharacters = true;
+        } else if (qName.equals("code-snippet")) {
+            currentId = attributes.getValue("location_id");
+        } else if (qName.equals("line") || qName.equals("textline")) {
+            collectCurrentCharacters = true;
+        } else if (qName.equals("file")) {
+            m_files.put(attributes.getValue("id"), attributes.getValue("name"));
+        } else if (qName.equals("location")) {
+            final Location location = new Location();
+            location.setLineStart(attributes.getValue("p_start_line"));
+            location.setLineEnd(attributes.getValue("p_end_line"));
+            location.setColStart(attributes.getValue("p_start_col"));
+            location.setColEnd(attributes.getValue("p_end_col"));
+            location.setOrigLineStart(attributes.getValue("o_start_line"));
+            location.setOrigLineEnd(attributes.getValue("o_end_line"));
+            location.setOrigColStart(attributes.getValue("o_start_col"));
+            location.setOrigColEnd(attributes.getValue("o_end_col"));
+            location.setFileID(attributes.getValue("p_file"));
+            location.setOrigFileID(attributes.getValue("o_file"));
+            m_locations.put(attributes.getValue("id"), location);
+        } else if (qName.equals("finding")) {
+            currentMessage = new Message();
+            currentMessage.setLocationID(attributes.getValue("location_id"));
+            currentMessage.setTypeID(attributes.getValue("key"));
+            currentMessage.setContext(attributes.getValue("context"));
+            if (attributes.getValue("kind").equals("alarm")) {
+                currentMessage.setType(Message.MessageType.Alarm);
             } else {
-                type.setAlarmClass(element.getAttribute("class"));
+                currentMessage.setType(Message.MessageType.Error);
             }
-            m_types.put(element.getAttribute("finding_key"), type);
+        } else if (qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
+            currentMessage = new Message();
+            currentMessage.setLocationID(attributes.getValue("location_id"));
+            currentMessage.setTypeID(attributes.getValue("type"));
+            currentMessage.setContext(attributes.getValue("context"));
+            if (qName.equals("alarm_message")) {
+                currentMessage.setType(MessageType.Alarm);
+            } else if (qName.equals("error_message")) {
+                currentMessage.setType(MessageType.Error);
+            } else {
+                currentMessage.setType(MessageType.Note);
+            }
+        } else if (qName.equals("project")) {
+            projectDescription = attributes.getValue("description");
         }
     }
 
-    /**
-     * parse all alarm categories out of report
-     *
-     * @param doc report to parse
-     */
-    private void parseAlarmCategories(Document doc) {
-        // find all categories and add it
-        NodeList alarmCategories = doc.getElementsByTagName("alarm_category");
-        for (int i = 0; i < alarmCategories.getLength(); i++) {
-            Element alarmCategory = (Element)alarmCategories.item(i);
-
-            m_categories.put(alarmCategory.getAttribute("id"), 
-                    alarmCategory.getTextContent());
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (qName.equals("alarm_category") || qName.equals("category_group")) {
+            m_categories.put(currentId, currentCharacters.toString());
+            currentId = null;
+            collectCurrentCharacters = false;
+            currentCharacters.setLength(0);
+        } else if (qName.equals("alarm_type") || qName.equals("finding_category")) {
+            currentAlarmType.setType(currentCharacters.toString());
+            m_types.put(currentId, currentAlarmType);
+            currentId = null;
+            currentAlarmType = null;
+            collectCurrentCharacters = false;
+            currentCharacters.setLength(0);
+        } else if (qName.equals("code-snippet")) {
+            m_codeSnippets.put(currentId, auxiliaryStringBuilder.toString());
+            currentId = null;
+            auxiliaryStringBuilder.setLength(0);
+        } else if (qName.equals("line") || qName.equals("textline")) {
+            if (auxiliaryStringBuilder.length() != 0) {
+                if (qName.equals("textline")) {
+                    auxiliaryStringBuilder.append("<br>");
+                } else {
+                    auxiliaryStringBuilder.append('\n');
+                }
+            }
+            auxiliaryStringBuilder.append(StringEscapeUtils.escapeHtml4(currentCharacters.toString()));
+            collectCurrentCharacters = false;
+            currentCharacters.setLength(0);
+        } else if (qName.equals("finding") || qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
+            currentMessage.setText(auxiliaryStringBuilder.toString());
+            m_messages.add(currentMessage);
+            currentMessage = null;
+            auxiliaryStringBuilder.setLength(0);
         }
+    }
 
-        final NodeList categoryGroups = doc.getElementsByTagName("category_group");
-        for (int i = 0; i < categoryGroups.getLength(); ++i) {
-            final Element element = (Element)categoryGroups.item(i);
-            m_categories.put(element.getAttribute("id"), element.getTextContent());
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        if (collectCurrentCharacters) {
+            currentCharacters.append(ch, start, length);
         }
     }
 }

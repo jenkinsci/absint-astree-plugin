@@ -1,9 +1,5 @@
 package com.absint.astree;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import edu.hm.hafner.analysis.IssueParser;
 import edu.hm.hafner.analysis.IssueBuilder;
 import edu.hm.hafner.analysis.ParsingException;
@@ -41,24 +37,16 @@ public class AstreeReportParser extends IssueParser {
      */
     @Override
     public Report parse(final ReaderFactory readerFactory) throws ParsingException {
-        // read the document
-        Document doc = readerFactory.readDocument();
-
         // create template with basic settings for issues
         IssueBuilder issueBuilder = new IssueBuilder();
 
-        // use project description as reference
-        String reference = "";
-        NodeList projects = doc.getElementsByTagName("project");
-        if (projects.getLength() > 0) {
-            Element project = (Element)projects.item(0);
-            reference = project.getAttribute("description");
-        }
-        issueBuilder.setReference(reference);
-
         // parse document
         AstreeSimpleReportParser parser = new AstreeSimpleReportParser();
-        parser.parse(doc);
+        readerFactory.parse(parser);
+
+        // use project description as reference
+        // FIXME(ivan): I have no idea why, that's what the previous version of the code did...
+        issueBuilder.setReference(parser.getProjectDescription());
 
         // create new report
         Report report = new Report();
