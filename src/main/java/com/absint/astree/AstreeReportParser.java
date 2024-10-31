@@ -52,23 +52,25 @@ public class AstreeReportParser extends IssueParser {
         Report report = new Report();
         report.setOriginReportFile(readerFactory.getFileName());
 
+        final StringBuilder descriptionBuilder = new StringBuilder();
+        final StringBuilder categoryBuilder = new StringBuilder();
+
         // process the messages
         for (Message message : parser.getMessages()) {
             // build description out of code snippet
-            final StringBuilder description = new StringBuilder();
             final String code = parser.getCodeSnippet(message.locationID);
             if (code != null && !code.isEmpty()) {
-                description.append("<p>Code:</p><pre>");
-                description.append(code);
-                description.append("</pre>");
+                descriptionBuilder.append("<p>Code:</p><pre>");
+                descriptionBuilder.append(code);
+                descriptionBuilder.append("</pre>");
             }
 
             // build description out of context
             final String context = message.context;
             if (context != null && !context.isEmpty()) {
-                description.append("<p>Context:</p><pre>");
-                description.append(context);
-                description.append("</pre>");
+                descriptionBuilder.append("<p>Context:</p><pre>");
+                descriptionBuilder.append(context);
+                descriptionBuilder.append("</pre>");
             }
 
             // build category out of message type and category
@@ -80,7 +82,6 @@ public class AstreeReportParser extends IssueParser {
             if (category == null) {
                 throw new ParsingException("Missing finding group " + type.categoryID);
             }
-            final StringBuilder categoryBuilder = new StringBuilder();
             categoryBuilder.append(type.type);
             categoryBuilder.append(" [");
             categoryBuilder.append(category);
@@ -99,11 +100,14 @@ public class AstreeReportParser extends IssueParser {
                 .setColumnStart(location.startColumn)
                 .setColumnEnd(location.endColumn)
                 .setCategory(categoryBuilder.toString())
-                .setDescription(description.toString())
+                .setDescription(descriptionBuilder.toString())
                 .setSeverity(message.severity);
 
             // add issue to report
             report.add(issueBuilder.build());
+
+            descriptionBuilder.setLength(0);
+            categoryBuilder.setLength(0);
         }
 
         issueBuilder.close();
