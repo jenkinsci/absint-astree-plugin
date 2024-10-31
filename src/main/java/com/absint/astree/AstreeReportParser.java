@@ -54,12 +54,9 @@ public class AstreeReportParser extends IssueParser {
 
         // process the messages
         for (Message message : parser.getMessages()) {
-            // get location ID
-            String locationID = message.getLocationID();
-
             // build description out of code snippet
             final StringBuilder description = new StringBuilder();
-            final String code = parser.getCodeSnippet(locationID);
+            final String code = parser.getCodeSnippet(message.locationID);
             if (code != null && !code.isEmpty()) {
                 description.append("<p>Code:</p><pre>");
                 description.append(code);
@@ -67,7 +64,7 @@ public class AstreeReportParser extends IssueParser {
             }
 
             // build description out of context
-            final String context = message.getContext(); 
+            final String context = message.context;
             if (context != null && !context.isEmpty()) {
                 description.append("<p>Context:</p><pre>");
                 description.append(context);
@@ -75,35 +72,35 @@ public class AstreeReportParser extends IssueParser {
             }
 
             // build category out of message type and category
-            final AlarmType type = parser.getAlarmType(message.getTypeID());
+            final AlarmType type = parser.getAlarmType(message.typeID);
             if (type == null) {
-                throw new ParsingException("Missing finding category " + message.getTypeID());
+                throw new ParsingException("Missing finding category " + message.typeID);
             }
-            final String category = parser.getCategory(type.getCategoryID());
+            final String category = parser.getCategory(type.categoryID);
             if (category == null) {
-                throw new ParsingException("Missing finding group " + type.getCategoryID());
+                throw new ParsingException("Missing finding group " + type.categoryID);
             }
             final StringBuilder categoryBuilder = new StringBuilder();
-            categoryBuilder.append(type.getType());
+            categoryBuilder.append(type.type);
             categoryBuilder.append(" [");
             categoryBuilder.append(category);
             categoryBuilder.append(']');
 
             // retrieve location of message
-            Location location = parser.getLocation(locationID);
+            Location location = parser.getLocation(message.locationID);
             if(location == null)
                 location = new Location();
 
             // create new issue
-            issueBuilder.setMessage(message.getText())
-                .setFileName(parser.getFile(location.getFileID()))
-                .setLineStart(location.getLineStart())
-                .setLineEnd(location.getLineEnd())
-                .setColumnStart(location.getColStart())
-                .setColumnEnd(location.getColEnd())
+            issueBuilder.setMessage(message.text)
+                .setFileName(parser.getFile(location.fileID))
+                .setLineStart(location.startLine)
+                .setLineEnd(location.endLine)
+                .setColumnStart(location.startColumn)
+                .setColumnEnd(location.endColumn)
                 .setCategory(categoryBuilder.toString())
                 .setDescription(description.toString())
-                .setSeverity(message.getSeverity());
+                .setSeverity(message.severity);
 
             // add issue to report
             report.add(issueBuilder.build());

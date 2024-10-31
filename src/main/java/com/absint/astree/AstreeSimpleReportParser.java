@@ -122,12 +122,12 @@ public class AstreeSimpleReportParser extends DefaultHandler {
         } else if (qName.equals("alarm_type")) {
             currentId = attributes.getValue("id");
             currentAlarmType = new AlarmType();
-            currentAlarmType.setCategoryID(attributes.getValue("category_id"));
+            currentAlarmType.categoryID = attributes.getValue("category_id");
             collectCurrentCharacters = true;
         } else if (qName.equals("finding_category")) {
             currentId = attributes.getValue("finding_key");
             currentAlarmType = new AlarmType();
-            currentAlarmType.setCategoryID(attributes.getValue("category_group_id"));
+            currentAlarmType.categoryID = attributes.getValue("category_group_id");
             collectCurrentCharacters = true;
         } else if (qName.equals("code-snippet")) {
             currentId = attributes.getValue("location_id");
@@ -137,33 +137,33 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             m_files.put(attributes.getValue("id"), attributes.getValue("name"));
         } else if (qName.equals("location")) {
             final Location location = new Location();
-            location.setLineStart(attributes.getValue("p_start_line"));
-            location.setLineEnd(attributes.getValue("p_end_line"));
-            location.setColStart(attributes.getValue("p_start_col"));
-            location.setColEnd(attributes.getValue("p_end_col"));
-            location.setFileID(attributes.getValue("p_file"));
+            location.fileID = attributes.getValue("p_file");
+            location.startLine = attributes.getValue("p_start_line");
+            location.endLine = attributes.getValue("p_end_line");
+            location.startColumn = attributes.getValue("p_start_col");
+            location.endColumn = attributes.getValue("p_end_col");
             m_locations.put(attributes.getValue("id"), location);
         } else if (qName.equals("finding")) {
             currentMessage = new Message();
-            currentMessage.setLocationID(attributes.getValue("location_id"));
-            currentMessage.setTypeID(attributes.getValue("key"));
-            currentMessage.setContext(attributes.getValue("context"));
+            currentMessage.locationID = attributes.getValue("location_id");
+            currentMessage.typeID = attributes.getValue("key");
+            currentMessage.context = attributes.getValue("context");
             if (attributes.getValue("kind").equals("alarm")) {
-                currentMessage.setSeverity(Severity.WARNING_HIGH);
+                currentMessage.severity = Severity.WARNING_HIGH;
             } else {
-                currentMessage.setSeverity(Severity.ERROR);
+                currentMessage.severity = Severity.ERROR;
             }
         } else if (qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
             currentMessage = new Message();
-            currentMessage.setLocationID(attributes.getValue("location_id"));
-            currentMessage.setTypeID(attributes.getValue("type"));
-            currentMessage.setContext(attributes.getValue("context"));
+            currentMessage.locationID = attributes.getValue("location_id");
+            currentMessage.typeID = attributes.getValue("type");
+            currentMessage.context = attributes.getValue("context");
             if (qName.equals("alarm_message")) {
-                currentMessage.setSeverity(Severity.WARNING_HIGH);
+                currentMessage.severity = Severity.WARNING_HIGH;
             } else if (qName.equals("error_message")) {
-                currentMessage.setSeverity(Severity.ERROR);
+                currentMessage.severity = Severity.ERROR;
             } else {
-                currentMessage.setSeverity(Severity.WARNING_LOW);
+                currentMessage.severity = Severity.WARNING_LOW;
             }
         } else if (qName.equals("project")) {
             projectDescription = attributes.getValue("description");
@@ -178,7 +178,7 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             collectCurrentCharacters = false;
             currentCharacters.setLength(0);
         } else if (qName.equals("alarm_type") || qName.equals("finding_category")) {
-            currentAlarmType.setType(currentCharacters.toString());
+            currentAlarmType.type = currentCharacters.toString();
             m_types.put(currentId, currentAlarmType);
             currentId = null;
             currentAlarmType = null;
@@ -200,7 +200,7 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             collectCurrentCharacters = false;
             currentCharacters.setLength(0);
         } else if (qName.equals("finding") || qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
-            currentMessage.setText(auxiliaryStringBuilder.toString());
+            currentMessage.text = auxiliaryStringBuilder.toString();
             m_messages.add(currentMessage);
             currentMessage = null;
             auxiliaryStringBuilder.setLength(0);
