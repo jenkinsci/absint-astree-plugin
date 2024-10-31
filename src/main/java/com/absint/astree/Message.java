@@ -1,50 +1,11 @@
 package com.absint.astree;
 
+import edu.hm.hafner.analysis.Severity;
+
 /**
  * message
  */
 public class Message {
-    /**
-     * possible message types
-     */
-    public enum MessageType {
-        Alarm ("alarm_message"),
-        Error ("error_message"),
-        Note ("note_message");
-
-        /**
-         * name of message type
-         */
-        private final String name;
-
-        /**
-         * c'tor
-         *
-         * @param s string of enum type
-         */
-        private MessageType(String s) {
-            name = s;
-        }
-
-        /**
-         * check if enum is equal
-         *
-         * @param otherName name to compare with
-         *
-         * @return true if equal false if not
-         */
-        public boolean equalsName(String otherName) {
-            return name.equals(otherName);
-        }
-
-        /**
-         * convert enumt to string
-         */
-        public String toString() {
-            return this.name;
-        }
-    }
-
     /**
      * ID of corresponding location
      */
@@ -68,7 +29,7 @@ public class Message {
     /**
      * message type
      */
-    private MessageType m_messageType = MessageType.Error;
+    private Severity m_severity = Severity.ERROR;
 
     /**
      * set location ID
@@ -154,24 +115,11 @@ public class Message {
         return m_context;
     }
 
-    /**
-     * set message type
-     *
-     * @param type message type
-     *
-     * @return this
-     */
-    public Message setType(MessageType type) {
-        m_messageType = type;
-        return this;
+    public void setSeverity(Severity severity) {
+        m_severity = severity;
     }
 
-    /**
-     * get message type
-     *
-     * @return message type
-     */
-    public MessageType getType() {
-        return m_messageType;
+    public Severity getSeverity() {
+        return m_severity;
     }
 };

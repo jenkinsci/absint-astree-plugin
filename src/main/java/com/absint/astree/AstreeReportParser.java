@@ -94,22 +94,6 @@ public class AstreeReportParser extends IssueParser {
             if(location == null)
                 location = new Location();
 
-            // map message severity
-            Severity severity;
-            switch (message.getType()) {
-                case Alarm:
-                    severity = Severity.WARNING_HIGH;
-                    break;
-                case Error:
-                    severity = Severity.ERROR;
-                    break;
-                case Note:
-                    severity = Severity.WARNING_LOW;
-                    break;
-                default:
-                    severity = Severity.ERROR;
-            }
-
             // create new issue
             issueBuilder.setMessage(message.getText())
                 .setFileName(parser.getFile(location.getFileID()))
@@ -119,7 +103,7 @@ public class AstreeReportParser extends IssueParser {
                 .setColumnEnd(location.getColEnd())
                 .setCategory(categoryBuilder.toString())
                 .setDescription(description.toString())
-                .setSeverity(severity);
+                .setSeverity(message.getSeverity());
 
             // add issue to report
             report.add(issueBuilder.build());

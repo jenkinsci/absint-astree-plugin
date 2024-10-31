@@ -5,7 +5,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.absint.astree.Message.MessageType;
+import edu.hm.hafner.analysis.Severity;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -123,17 +123,11 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             currentId = attributes.getValue("id");
             currentAlarmType = new AlarmType();
             currentAlarmType.setCategoryID(attributes.getValue("category_id"));
-            currentAlarmType.setAlarmClass(attributes.getValue("class"));
             collectCurrentCharacters = true;
         } else if (qName.equals("finding_category")) {
             currentId = attributes.getValue("finding_key");
             currentAlarmType = new AlarmType();
             currentAlarmType.setCategoryID(attributes.getValue("category_group_id"));
-            if (attributes.getValue("finding_kind").equals("error")) {
-                currentAlarmType.setAlarmClass("E");
-            } else {
-                currentAlarmType.setAlarmClass(attributes.getValue("class"));
-            }
             collectCurrentCharacters = true;
         } else if (qName.equals("code-snippet")) {
             currentId = attributes.getValue("location_id");
@@ -147,12 +141,7 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             location.setLineEnd(attributes.getValue("p_end_line"));
             location.setColStart(attributes.getValue("p_start_col"));
             location.setColEnd(attributes.getValue("p_end_col"));
-            location.setOrigLineStart(attributes.getValue("o_start_line"));
-            location.setOrigLineEnd(attributes.getValue("o_end_line"));
-            location.setOrigColStart(attributes.getValue("o_start_col"));
-            location.setOrigColEnd(attributes.getValue("o_end_col"));
             location.setFileID(attributes.getValue("p_file"));
-            location.setOrigFileID(attributes.getValue("o_file"));
             m_locations.put(attributes.getValue("id"), location);
         } else if (qName.equals("finding")) {
             currentMessage = new Message();
@@ -160,9 +149,9 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             currentMessage.setTypeID(attributes.getValue("key"));
             currentMessage.setContext(attributes.getValue("context"));
             if (attributes.getValue("kind").equals("alarm")) {
-                currentMessage.setType(Message.MessageType.Alarm);
+                currentMessage.setSeverity(Severity.WARNING_HIGH);
             } else {
-                currentMessage.setType(Message.MessageType.Error);
+                currentMessage.setSeverity(Severity.ERROR);
             }
         } else if (qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
             currentMessage = new Message();
@@ -170,11 +159,11 @@ public class AstreeSimpleReportParser extends DefaultHandler {
             currentMessage.setTypeID(attributes.getValue("type"));
             currentMessage.setContext(attributes.getValue("context"));
             if (qName.equals("alarm_message")) {
-                currentMessage.setType(MessageType.Alarm);
+                currentMessage.setSeverity(Severity.WARNING_HIGH);
             } else if (qName.equals("error_message")) {
-                currentMessage.setType(MessageType.Error);
+                currentMessage.setSeverity(Severity.ERROR);
             } else {
-                currentMessage.setType(MessageType.Note);
+                currentMessage.setSeverity(Severity.WARNING_LOW);
             }
         } else if (qName.equals("project")) {
             projectDescription = attributes.getValue("description");
