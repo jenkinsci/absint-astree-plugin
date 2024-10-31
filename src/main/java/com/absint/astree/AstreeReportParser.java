@@ -53,7 +53,7 @@ public class AstreeReportParser extends IssueParser {
         report.setOriginReportFile(readerFactory.getFileName());
 
         // process the messages
-        parser.getMessages().stream().forEach((message) -> {
+        for (Message message : parser.getMessages()) {
             // get location ID
             String locationID = message.getLocationID();
 
@@ -123,7 +123,7 @@ public class AstreeReportParser extends IssueParser {
 
             // add issue to report
             report.add(issueBuilder.build());
-        });
+        }
 
         issueBuilder.close();
 
