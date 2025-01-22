@@ -27,8 +27,10 @@
 package com.absint.astree;
 import hudson.Proc;
 import hudson.Launcher;
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
@@ -287,25 +289,28 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
 
     /**
       */
-    private String constructCommandLineCall(String reportfile, String preprocessoutput ) {
-        String cmd    = getDescriptor().getAlauncher();
+    private ArgumentListBuilder constructCommandLineCall(String reportfile, EnvVars envVars, boolean isUnix, FilePath preprocessOutput) {
+        final ArgumentListBuilder builder = new ArgumentListBuilder();
 
-        cmd = cmd  + " -b -s "                        +
-                     getDescriptor().getAstree_server()  + " "                     +
-                     ((!getDescriptor().getUser().trim().equals("") && !getDescriptor().getPassword().trim().equals("")) ?
-                       ( "--user " + getDescriptor().getUser() + "@" + getDescriptor().getPassword() ) : "")  +
-                     ((this.analysis_id != null && !this.analysis_id.trim().equals("")) ?
-                        (" --id " + this.analysis_id) : "" )                       +
-                     ((this.dax_file != null && !this.dax_file.trim().equals("") )      ?
-                        (" --import \"" + this.dax_file + "\"") : "")              +
-                     " --report-file " + "\"" + reportfile + ".txt\"" +
-                     " --xml-report-file " + "\"" + reportfile + ".xml\"";
-        if(this.genPreprocessOutput)
-                cmd += " --preprocess-report-file " + "\"" + preprocessoutput + "\"";
-        if(this.dropAnalysis)
-                cmd += " --drop";
+        builder.add(getDescriptor().getAlauncher());
+        builder.add("-b");
+        builder.add("-s", expandEnvironmentVarsHelper(getDescriptor().getAstree_server(), envVars, isUnix));
+        if (analysis_id != null && !analysis_id.trim().isEmpty()) {
+            builder.add("--id", expandEnvironmentVarsHelper(analysis_id, envVars, isUnix));
+        }
+        if (dax_file != null && !dax_file.trim().isEmpty()) {
+            builder.add("--import", expandEnvironmentVarsHelper(dax_file, envVars, isUnix));
+        }
+        builder.add("--report-file ", reportfile + ".txt");
+        builder.add("--xml-report-file", reportfile + ".xml");
+        if (genPreprocessOutput) {
+            builder.add("--preprocess-report-file", preprocessOutput.getRemote());
+        }
+        if (dropAnalysis) {
+            builder.add("--drop");
+        }
 
-        return cmd; 
+        return builder;
     }
 
 
@@ -346,17 +351,19 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
                                                launcher.isUnix()); 
             listener.getLogger().println(infoStringSummaryDest);
 
+            final EnvVars envVars = build.getEnvironment(listener);
+            if (!getDescriptor().getUser().trim().isEmpty() && !getDescriptor().getPassword().trim().isEmpty()) {
+                envVars.put("A3_SERVER_USER", getDescriptor().getUser());
+                envVars.put("A3_SERVER_PASSWORD", getDescriptor().getPassword());
+            }
 
-            String cmd = this.constructCommandLineCall( reportfile,
-                                                    workspace.toString() + "/" + TMP_PREPROCESS_OUTPUT  );
-            
-
-            cmd = expandEnvironmentVarsHelper(cmd, build.getEnvironment(listener), launcher.isUnix());
             sp.start();                       // Start log file reader
-            proc = launcher.launch( cmd, // Command line call to Astree
-                                    build.getEnvironment(listener), 
-                                    listener.getLogger(),
-                                    workspace );
+            proc = launcher.launch()
+                .cmds(constructCommandLineCall(reportfile, build.getEnvironment(listener), launcher.isUnix(), workspace.child(TMP_PREPROCESS_OUTPUT)))
+                .envs(envVars)
+                .stdout(listener.getLogger())
+                .pwd(workspace)
+                .start();
             exitCode = proc.join();           // Wait for Astree to finish
             sp.kill();                        // Stop log file reader
             sp.join();                        // Wait for log file reader to finish
