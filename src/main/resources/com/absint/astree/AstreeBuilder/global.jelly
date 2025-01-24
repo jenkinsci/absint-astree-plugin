@@ -27,7 +27,7 @@
     </f:entry>
     <f:entry title="Password" field="password"
       description="Specify your Astrée User Password">
-      <f:textbox />
+      <f:password />
     </f:entry>
   </f:section>
 </j:jelly>
