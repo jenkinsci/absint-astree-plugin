@@ -301,7 +301,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
         if (dax_file != null && !dax_file.trim().isEmpty()) {
             builder.add("--import", expandEnvironmentVarsHelper(dax_file, envVars, isUnix));
         }
-        builder.add("--report-file ", reportfile + ".txt");
+        builder.add("--report-file", reportfile + ".txt");
         builder.add("--xml-report-file", reportfile + ".xml");
         if (genPreprocessOutput) {
             builder.add("--preprocess-report-file", preprocessOutput.getRemote());
