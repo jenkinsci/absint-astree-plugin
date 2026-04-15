@@ -171,6 +171,9 @@ public class AstreeReportParser extends IssueParser {
                 location.endColumn = attributes.getValue("p_end_col");
                 locations.put(attributes.getValue("id"), location);
             } else if (qName.equals("finding")) {
+                if (attributes.getValue("duplicate").equals("1")) {
+                    return; // Skip duplicates.
+                }
                 currentMessage = new Message();
                 currentMessage.locationID = attributes.getValue("location_id");
                 currentMessage.typeID = attributes.getValue("key");
@@ -181,6 +184,9 @@ public class AstreeReportParser extends IssueParser {
                     currentMessage.severity = Severity.ERROR;
                 }
             } else if (qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
+                if (attributes.getValue("duplicate").equals("1")) {
+                    return; // Skip duplicates.
+                }
                 currentMessage = new Message();
                 currentMessage.locationID = attributes.getValue("location_id");
                 currentMessage.typeID = attributes.getValue("type");
@@ -227,8 +233,10 @@ public class AstreeReportParser extends IssueParser {
                 collectCurrentCharacters = false;
                 currentCharacters.setLength(0);
             } else if (qName.equals("finding") || qName.equals("alarm_message") || qName.equals("error_message") || qName.equals("note_message")) {
-                currentMessage.text = auxiliaryStringBuilder.toString();
-                messages.add(currentMessage);
+                if (currentMessage != null) {
+                    currentMessage.text = auxiliaryStringBuilder.toString();
+                    messages.add(currentMessage);
+                }
                 currentMessage = null;
                 auxiliaryStringBuilder.setLength(0);
             }

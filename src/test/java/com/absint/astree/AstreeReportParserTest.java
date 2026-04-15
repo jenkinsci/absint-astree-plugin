@@ -99,7 +99,7 @@ public class AstreeReportParserTest {
         }
 
         if (fileName.compareTo("report-18.10.xml") <= 0) {
-            assertEquals(fileName, 38, report.size());
+            assertEquals(fileName, 37, report.size());
 
             final Issue alarm1 = report.get(0);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm1.getSeverity());
@@ -121,7 +121,7 @@ public class AstreeReportParserTest {
             }
             assertEquals(fileName, "", alarm1.getDescription());
 
-            final Issue alarm2 = report.get(37);
+            final Issue alarm2 = report.get(36);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm2.getSeverity());
             if (fileName.equals("report-18.04.xml")) {
                 assertEquals(fileName, "Unreachable code [Violation of coding rules]", alarm2.getCategory());
@@ -173,7 +173,7 @@ public class AstreeReportParserTest {
             }
             assertEquals(fileName, "<p>Context:</p><pre>l32#call#main@48,l37#loop@77=11/12</pre>", error2.getDescription());
 
-            final Issue note1 = report.get(30);
+            final Issue note1 = report.get(29);
             assertEquals(fileName, Severity.WARNING_LOW, note1.getSeverity());
             assertEquals(fileName, "preprocessed/src/scenarios.c", note1.getFileName());
             assertEquals(fileName, "Control flow [Notifications]", note1.getCategory());
@@ -189,7 +189,7 @@ public class AstreeReportParserTest {
             }
             assertEquals(fileName, "", note1.getDescription());
 
-            final Issue note2 = report.get(35);
+            final Issue note2 = report.get(34);
             assertEquals(fileName, Severity.WARNING_LOW, note2.getSeverity());
             assertEquals(fileName, "preprocessed/src/scenarios.c", note2.getFileName());
             assertEquals(fileName, "Control flow [Notifications]", note2.getCategory());
@@ -205,7 +205,7 @@ public class AstreeReportParserTest {
             }
             assertEquals(fileName, "", note2.getDescription());
         } else if (fileName.compareTo("report-21.04i2.xml") <= 0) {
-            assertEquals(fileName, 125, report.size());
+            assertEquals(fileName, 21, report.size());
 
             final Issue alarm1 = report.get(0);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm1.getSeverity());
@@ -231,7 +231,7 @@ public class AstreeReportParserTest {
                 "                                    ~~~~~~~~~~</pre>",
                 alarm1.getDescription());
 
-            final Issue alarm2 = report.get(119);
+            final Issue alarm2 = report.get(19);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm2.getSeverity());
             assertEquals(fileName, "Integer division by zero [Division or modulo by zero]", alarm2.getCategory());
             assertEquals(fileName, "preprocessed/src/dhry/Proc7.c", alarm2.getFileName());
@@ -274,7 +274,7 @@ public class AstreeReportParserTest {
             }
             assertTrue(fileName, error1.getDescription().endsWith("</pre>"));
 
-            final Issue error2 = report.get(124);
+            final Issue error2 = report.get(20);
             assertEquals(fileName, Severity.ERROR, error2.getSeverity());
             if (fileName.compareTo("report-20.10.xml") <= 0) {
                 assertEquals(fileName, "Definite runtime error [Errors]", error2.getCategory());
@@ -301,7 +301,7 @@ public class AstreeReportParserTest {
             }
             assertTrue(fileName, error2.getDescription().endsWith("</pre>"));
         } else {
-            assertEquals(fileName, 127, report.size());
+            assertEquals(fileName, 23, report.size());
 
             final Issue alarm1 = report.get(0);
             assertEquals(fileName, Severity.WARNING_HIGH, alarm1.getSeverity());
@@ -319,7 +319,7 @@ public class AstreeReportParserTest {
                 "                                    ~~~~~~~~~~</pre>",
                 alarm1.getDescription());
 
-            final Issue error1 = report.get(120);
+            final Issue error1 = report.get(20);
             assertEquals(fileName, Severity.ERROR, error1.getSeverity());
             assertEquals(fileName, "Analysis stopped in critical context [Errors]", error1.getCategory());
             assertEquals(fileName, "preprocessed/src/dhry/Proc7.c", error1.getFileName());
@@ -331,19 +331,6 @@ public class AstreeReportParserTest {
             assertEquals(fileName, "n/A", error1.getReference());
             assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
             assertTrue(fileName, error1.getDescription().endsWith("#call#Proc7</pre>"));
-
-            final Issue error2 = report.get(124);
-            assertEquals(fileName, Severity.ERROR, error2.getSeverity());
-            assertEquals(fileName, "Analysis stopped in critical context [Errors]", error2.getCategory());
-            assertEquals(fileName, "preprocessed/src/dhry/Proc7.c", error2.getFileName());
-            assertEquals(fileName, 78, error2.getLineStart());
-            assertEquals(fileName, 3, error2.getColumnStart());
-            assertEquals(fileName, 78, error2.getLineEnd());
-            assertEquals(fileName, 22, error2.getColumnEnd());
-            assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
-            assertEquals(fileName, "n/A", error2.getReference());
-            assertTrue(fileName, error2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
-            assertTrue(fileName, error2.getDescription().endsWith("#call#Proc7</pre>"));
         }
     }
 }
