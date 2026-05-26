@@ -164,11 +164,11 @@ public class AstreeReportParser extends IssueParser {
                 files.put(attributes.getValue("id"), attributes.getValue("name"));
             } else if (qName.equals("location")) {
                 final Location location = new Location();
-                location.fileID = attributes.getValue("p_file");
-                location.startLine = attributes.getValue("p_start_line");
-                location.endLine = attributes.getValue("p_end_line");
-                location.startColumn = attributes.getValue("p_start_col");
-                location.endColumn = attributes.getValue("p_end_col");
+                location.fileID = attributes.getValue("o_file");
+                location.startLine = attributes.getValue("o_start_line");
+                location.endLine = attributes.getValue("o_end_line");
+                location.startColumn = attributes.getValue("o_start_col");
+                location.endColumn = attributes.getValue("o_end_col");
                 locations.put(attributes.getValue("id"), location);
             } else if (qName.equals("finding")) {
                 if (attributes.getValue("duplicate").equals("1")) {
