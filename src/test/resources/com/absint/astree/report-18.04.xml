@@ -649,8 +649,8 @@
             <file preprocessed="1" name="preprocessed/src/astree.cfg" id="p5"/>
             <file preprocessed="1" name="preprocessed/src/scenarios.c" id="p6"/>
             <file preprocessed="0" name="[Configuration.Preprocessor]" id="o2"/>
-            <file preprocessed="0" name="/tmp/a3c-.ZOtRZv/examples/src/astree.cfg" id="o7"/>
-            <file preprocessed="0" name="/tmp/a3c-.ZOtRZv/examples/src/scenarios.c" id="o8"/>
+            <file preprocessed="0" name="/tmp/a3c-123456/examples/src/astree.cfg" id="o7"/>
+            <file preprocessed="0" name="/tmp/a3c-123456/examples/src/scenarios.c" id="o8"/>
         </files>
         <locations>
             <location id="l2" p_file="p6" p_start_line="20" p_start_col="27" p_end_line="20" p_end_col="30" o_file="o8" o_start_line="26" o_end_line="26"/>

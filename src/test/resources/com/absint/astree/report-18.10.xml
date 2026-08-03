@@ -692,8 +692,8 @@
             <file preprocessed="1" name="preprocessed/src/astree.cfg" id="p12"/>
             <file preprocessed="1" name="preprocessed/src/scenarios.c" id="p13"/>
             <file preprocessed="0" name="[Configuration.Preprocessor]" id="o2"/>
-            <file preprocessed="0" name="/tmp/a3c-UsXeGc/examples/src/astree.cfg" id="o10"/>
-            <file preprocessed="0" name="/tmp/a3c-UsXeGc/examples/src/scenarios.c" id="o11"/>
+            <file preprocessed="0" name="/tmp/a3c-123456/examples/src/astree.cfg" id="o10"/>
+            <file preprocessed="0" name="/tmp/a3c-123456/examples/src/scenarios.c" id="o11"/>
         </files>
         <locations>
             <location id="l35" p_file="p13" p_start_line="73" p_start_col="19" p_end_line="73" p_end_col="20" o_file="o11" o_start_line="79" o_end_line="79"/>
