@@ -1,33 +1,42 @@
 package com.absint.astree;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.hm.hafner.analysis.FileReaderFactory;
 import edu.hm.hafner.analysis.Issue;
 import edu.hm.hafner.analysis.Report;
 import edu.hm.hafner.analysis.Severity;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests for {@link AstreeReportParser}.
  */
-public class AstreeReportParserTest {
-    @Test
-    public void test() {
-        final File dir = new File(getClass().getResource("").getPath());
-        for (File file : dir.listFiles()) {
-            if (!file.getName().endsWith(".xml"))
-                continue;
-            final FileReaderFactory readerFactory = new FileReaderFactory(file.toPath());
-            final AstreeReportParser parser = new AstreeReportParser();
-            assertTrue(parser.accepts(readerFactory));
-            testReport(parser.parse(readerFactory));
-        }
+class AstreeReportParserTest {
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("reports")
+    void test(String fileName, Path path) {
+        final FileReaderFactory readerFactory = new FileReaderFactory(path);
+        final AstreeReportParser parser = new AstreeReportParser();
+        assertTrue(parser.accepts(readerFactory));
+        testReport(parser.parse(readerFactory));
+    }
+
+    static Stream<Arguments> reports() {
+        final File dir = new File(AstreeReportParserTest.class.getResource("").getPath());
+        return Arrays.stream(Objects.requireNonNull(dir.listFiles()))
+                .filter(file -> file.getName().endsWith(".xml"))
+                .map(file -> Arguments.of(file.getName(), file.toPath()));
     }
 
     private void testReport(Report report) {
@@ -39,299 +48,299 @@ public class AstreeReportParserTest {
 
         final Set<String> files = report.getAbsolutePaths();
         if (fileName.compareTo("report-18.10.xml") <= 0) {
-            assertEquals(fileName, 2, files.size());
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/scenarios.c"));
-            assertTrue(fileName, files.contains("-"));
+            assertEquals(2, files.size(), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/scenarios.c"), fileName);
+            assertTrue(files.contains("-"), fileName);
         } else if (fileName.compareTo("report-21.04i2.xml") <= 0) {
-            assertEquals(fileName, 5, files.size());
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/astree.cfg"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/filter.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/scenarios.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/dhry/Proc1.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/dhry/Proc7.c"));
+            assertEquals(5, files.size(), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/astree.cfg"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/filter.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/scenarios.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/dhry/Proc1.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/dhry/Proc7.c"), fileName);
         } else {
-            assertEquals(fileName, 6, files.size());
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/state_machine.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/astree.cfg"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/filter.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/scenarios.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/dhry/Proc1.c"));
-            assertTrue(fileName, files.contains("/tmp/a3c-123456/examples/src/dhry/Proc7.c"));
+            assertEquals(6, files.size(), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/state_machine.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/astree.cfg"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/filter.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/scenarios.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/dhry/Proc1.c"), fileName);
+            assertTrue(files.contains("/tmp/a3c-123456/examples/src/dhry/Proc7.c"), fileName);
         }
 
         final Set<String> categories = report.getCategories();
         if (fileName.compareTo("report-18.10.xml") <= 0) {
-            assertEquals(fileName, 21, categories.size());
+            assertEquals(21, categories.size(), fileName);
         } else if (fileName.compareTo("report-21.04i2.xml") <= 0) {
-            assertEquals(fileName, 11, categories.size());
-            assertTrue(fileName, categories.contains("Integer division by zero [Division or modulo by zero]"));
-            assertTrue(fileName, categories.contains("Use of uninitialized variables [Uninitialized variables]"));
-            assertTrue(fileName, categories.contains("Overflow in conversion (with unpredictable result) [Invalid ranges and overflows]"));
+            assertEquals(11, categories.size(), fileName);
+            assertTrue(categories.contains("Integer division by zero [Division or modulo by zero]"), fileName);
+            assertTrue(categories.contains("Use of uninitialized variables [Uninitialized variables]"), fileName);
+            assertTrue(categories.contains("Overflow in conversion (with unpredictable result) [Invalid ranges and overflows]"), fileName);
             if (fileName.compareTo("report-20.10.xml") <= 0) {
-                assertTrue(fileName, categories.contains("Definite runtime error [Errors]"));
+                assertTrue(categories.contains("Definite runtime error [Errors]"), fileName);
             } else {
-                assertTrue(fileName, categories.contains("Analysis stopped [Errors]"));
+                assertTrue(categories.contains("Analysis stopped [Errors]"), fileName);
             }
-            assertTrue(fileName, categories.contains("Possible overflow upon dereference [Invalid usage of pointers and arrays]"));
-            assertTrue(fileName, categories.contains("Assertion failure [Failed or invalid directives]"));
-            assertTrue(fileName, categories.contains("Incompatible object pointer conversion [Failed coding rule checks]"));
-            assertTrue(fileName, categories.contains("Infinite loop [Data and control flow alarms]"));
-            assertTrue(fileName, categories.contains("Control flow anomaly [Data and control flow alarms]"));
-            assertTrue(fileName, categories.contains("Out-of-bound array access [Invalid usage of pointers and arrays]"));
-            assertTrue(fileName, categories.contains("Overflow in arithmetic [Invalid ranges and overflows]"));
+            assertTrue(categories.contains("Possible overflow upon dereference [Invalid usage of pointers and arrays]"), fileName);
+            assertTrue(categories.contains("Assertion failure [Failed or invalid directives]"), fileName);
+            assertTrue(categories.contains("Incompatible object pointer conversion [Failed coding rule checks]"), fileName);
+            assertTrue(categories.contains("Infinite loop [Data and control flow alarms]"), fileName);
+            assertTrue(categories.contains("Control flow anomaly [Data and control flow alarms]"), fileName);
+            assertTrue(categories.contains("Out-of-bound array access [Invalid usage of pointers and arrays]"), fileName);
+            assertTrue(categories.contains("Overflow in arithmetic [Invalid ranges and overflows]"), fileName);
         } else {
-            assertEquals(fileName, 12, categories.size());
-            assertTrue(fileName, categories.contains("Integer division by zero [Division or modulo by zero]"));
-            assertTrue(fileName, categories.contains("Use of uninitialized variables [Uninitialized variables]"));
-            assertTrue(fileName, categories.contains("Analysis stopped in critical context [Errors]"));
-            assertTrue(fileName, categories.contains("Unbounded loop [Data and control flow alarms]"));
-            assertTrue(fileName, categories.contains("Overflow in conversion (with unpredictable result) [Invalid ranges and overflows]"));
-            assertTrue(fileName, categories.contains("Possible overflow upon dereference [Invalid usage of pointers and arrays]"));
-            assertTrue(fileName, categories.contains("Assertion failure [Failed or invalid directives]"));
-            assertTrue(fileName, categories.contains("Incompatible object pointer conversion [Failed coding rule checks]"));
-            assertTrue(fileName, categories.contains("Infinite loop [Data and control flow alarms]"));
-            assertTrue(fileName, categories.contains("Control flow anomaly [Data and control flow alarms]"));
-            assertTrue(fileName, categories.contains("Out-of-bound array access [Invalid usage of pointers and arrays]"));
+            assertEquals(12, categories.size(), fileName);
+            assertTrue(categories.contains("Integer division by zero [Division or modulo by zero]"), fileName);
+            assertTrue(categories.contains("Use of uninitialized variables [Uninitialized variables]"), fileName);
+            assertTrue(categories.contains("Analysis stopped in critical context [Errors]"), fileName);
+            assertTrue(categories.contains("Unbounded loop [Data and control flow alarms]"), fileName);
+            assertTrue(categories.contains("Overflow in conversion (with unpredictable result) [Invalid ranges and overflows]"), fileName);
+            assertTrue(categories.contains("Possible overflow upon dereference [Invalid usage of pointers and arrays]"), fileName);
+            assertTrue(categories.contains("Assertion failure [Failed or invalid directives]"), fileName);
+            assertTrue(categories.contains("Incompatible object pointer conversion [Failed coding rule checks]"), fileName);
+            assertTrue(categories.contains("Infinite loop [Data and control flow alarms]"), fileName);
+            assertTrue(categories.contains("Control flow anomaly [Data and control flow alarms]"), fileName);
+            assertTrue(categories.contains("Out-of-bound array access [Invalid usage of pointers and arrays]"), fileName);
             if (fileName.compareTo("report-22.10i4.xml") <= 0) {
-                assertTrue(fileName, categories.contains("Overflow in arithmetic [Invalid ranges and overflows]"));
+                assertTrue(categories.contains("Overflow in arithmetic [Invalid ranges and overflows]"), fileName);
             } else {
-                assertTrue(fileName, categories.contains("Overflow in arithmetic (with unpredictable result) [Invalid ranges and overflows]"));
+                assertTrue(categories.contains("Overflow in arithmetic (with unpredictable result) [Invalid ranges and overflows]"), fileName);
             }
         }
 
         if (fileName.compareTo("report-18.10.xml") <= 0) {
-            assertEquals(fileName, 36, report.size());
+            assertEquals(36, report.size(), fileName);
 
             final Issue alarm1 = report.get(0);
-            assertEquals(fileName, Severity.WARNING_HIGH, alarm1.getSeverity());
+            assertEquals(Severity.WARNING_HIGH, alarm1.getSeverity(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "Parameter name [Violation of coding rules]", alarm1.getCategory());
+                assertEquals("Parameter name [Violation of coding rules]", alarm1.getCategory(), fileName);
             } else {
-                assertEquals(fileName, "Parameter name [Failed coding rule checks]", alarm1.getCategory());
+                assertEquals("Parameter name [Failed coding rule checks]", alarm1.getCategory(), fileName);
             }
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", alarm1.getFileName());
-            assertEquals(fileName, 26, alarm1.getLineStart());
-            assertEquals(fileName, 0, alarm1.getColumnStart());
-            assertEquals(fileName, 26, alarm1.getLineEnd());
-            assertEquals(fileName, 0, alarm1.getColumnEnd());
-            assertEquals(fileName, "ALARM (R): check parameter-name failed (violates M2012.8.2-required)", alarm1.getMessage());
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", alarm1.getFileName(), fileName);
+            assertEquals(26, alarm1.getLineStart(), fileName);
+            assertEquals(0, alarm1.getColumnStart(), fileName);
+            assertEquals(26, alarm1.getLineEnd(), fileName);
+            assertEquals(0, alarm1.getColumnEnd(), fileName);
+            assertEquals("ALARM (R): check parameter-name failed (violates M2012.8.2-required)", alarm1.getMessage(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "n/a", alarm1.getReference());
+                assertEquals("n/a", alarm1.getReference(), fileName);
             } else {
-                assertEquals(fileName, "n/A", alarm1.getReference());
+                assertEquals("n/A", alarm1.getReference(), fileName);
             }
-            assertEquals(fileName, "", alarm1.getDescription());
+            assertEquals("", alarm1.getDescription(), fileName);
 
             final Issue alarm2 = report.get(35);
-            assertEquals(fileName, Severity.WARNING_HIGH, alarm2.getSeverity());
+            assertEquals(Severity.WARNING_HIGH, alarm2.getSeverity(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "Unreachable code [Violation of coding rules]", alarm2.getCategory());
+                assertEquals("Unreachable code [Violation of coding rules]", alarm2.getCategory(), fileName);
             } else {
-                assertEquals(fileName, "Unreachable code [Failed coding rule checks]", alarm2.getCategory());
+                assertEquals("Unreachable code [Failed coding rule checks]", alarm2.getCategory(), fileName);
             }
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", alarm2.getFileName());
-            assertEquals(fileName, 140, alarm2.getLineStart());
-            assertEquals(fileName, 0, alarm2.getColumnStart());
-            assertEquals(fileName, 140, alarm2.getLineEnd());
-            assertEquals(fileName, 0, alarm2.getColumnEnd());
-            assertEquals(fileName, "ALARM (R): check unreachable-code failed (violates M2012.2.1-required)", alarm2.getMessage());
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", alarm2.getFileName(), fileName);
+            assertEquals(140, alarm2.getLineStart(), fileName);
+            assertEquals(0, alarm2.getColumnStart(), fileName);
+            assertEquals(140, alarm2.getLineEnd(), fileName);
+            assertEquals(0, alarm2.getColumnEnd(), fileName);
+            assertEquals("ALARM (R): check unreachable-code failed (violates M2012.2.1-required)", alarm2.getMessage(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "n/a", alarm2.getReference());
+                assertEquals("n/a", alarm2.getReference(), fileName);
             } else {
-                assertEquals(fileName, "n/A", alarm2.getReference());
+                assertEquals("n/A", alarm2.getReference(), fileName);
             }
-            assertEquals(fileName, "", alarm2.getDescription());
+            assertEquals("", alarm2.getDescription(), fileName);
 
             final Issue error1 = report.get(20);
-            assertEquals(fileName, Severity.ERROR, error1.getSeverity());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", error1.getFileName());
-            assertEquals(fileName, "Definite runtime error [Errors]", error1.getCategory());
-            assertEquals(fileName, 79, error1.getLineStart());
-            assertEquals(fileName, 0, error1.getColumnStart());
-            assertEquals(fileName, 79, error1.getLineEnd());
-            assertEquals(fileName, 0, error1.getColumnEnd());
-            assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage());
+            assertEquals(Severity.ERROR, error1.getSeverity(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", error1.getFileName(), fileName);
+            assertEquals("Definite runtime error [Errors]", error1.getCategory(), fileName);
+            assertEquals(79, error1.getLineStart(), fileName);
+            assertEquals(0, error1.getColumnStart(), fileName);
+            assertEquals(79, error1.getLineEnd(), fileName);
+            assertEquals(0, error1.getColumnEnd(), fileName);
+            assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "n/a", error1.getReference());
+                assertEquals("n/a", error1.getReference(), fileName);
             } else {
-                assertEquals(fileName, "n/A", error1.getReference());
+                assertEquals("n/A", error1.getReference(), fileName);
             }
-            assertEquals(fileName, "<p>Context:</p><pre>l32#call#main@48,l34#loop@72=11/12</pre>", error1.getDescription());
+            assertEquals("<p>Context:</p><pre>l32#call#main@48,l34#loop@72=11/12</pre>", error1.getDescription(), fileName);
 
             final Issue error2 = report.get(23);
-            assertEquals(fileName, Severity.ERROR, error2.getSeverity());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", error2.getFileName());
-            assertEquals(fileName, "Definite runtime error [Errors]", error2.getCategory());
-            assertEquals(fileName, 84, error2.getLineStart());
-            assertEquals(fileName, 0, error2.getColumnStart());
-            assertEquals(fileName, 84, error2.getLineEnd());
-            assertEquals(fileName, 0, error2.getColumnEnd());
-            assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage());
+            assertEquals(Severity.ERROR, error2.getSeverity(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", error2.getFileName(), fileName);
+            assertEquals("Definite runtime error [Errors]", error2.getCategory(), fileName);
+            assertEquals(84, error2.getLineStart(), fileName);
+            assertEquals(0, error2.getColumnStart(), fileName);
+            assertEquals(84, error2.getLineEnd(), fileName);
+            assertEquals(0, error2.getColumnEnd(), fileName);
+            assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "n/a", error2.getReference());
+                assertEquals("n/a", error2.getReference(), fileName);
             } else {
-                assertEquals(fileName, "n/A", error2.getReference());
+                assertEquals("n/A", error2.getReference(), fileName);
             }
-            assertEquals(fileName, "<p>Context:</p><pre>l32#call#main@48,l37#loop@77=11/12</pre>", error2.getDescription());
+            assertEquals("<p>Context:</p><pre>l32#call#main@48,l37#loop@77=11/12</pre>", error2.getDescription(), fileName);
 
             final Issue note1 = report.get(28);
-            assertEquals(fileName, Severity.WARNING_LOW, note1.getSeverity());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", note1.getFileName());
-            assertEquals(fileName, "Control flow [Notifications]", note1.getCategory());
-            assertEquals(fileName, 54, note1.getLineStart());
-            assertEquals(fileName, 0, note1.getColumnStart());
-            assertEquals(fileName, 141, note1.getLineEnd());
-            assertEquals(fileName, 0, note1.getColumnEnd());
-            assertEquals(fileName, "NOTE: Analyzed entry-point main never returns.", note1.getMessage());
+            assertEquals(Severity.WARNING_LOW, note1.getSeverity(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", note1.getFileName(), fileName);
+            assertEquals("Control flow [Notifications]", note1.getCategory(), fileName);
+            assertEquals(54, note1.getLineStart(), fileName);
+            assertEquals(0, note1.getColumnStart(), fileName);
+            assertEquals(141, note1.getLineEnd(), fileName);
+            assertEquals(0, note1.getColumnEnd(), fileName);
+            assertEquals("NOTE: Analyzed entry-point main never returns.", note1.getMessage(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "n/a", note1.getReference());
+                assertEquals("n/a", note1.getReference(), fileName);
             } else {
-                assertEquals(fileName, "n/A", note1.getReference());
+                assertEquals("n/A", note1.getReference(), fileName);
             }
-            assertEquals(fileName, "", note1.getDescription());
+            assertEquals("", note1.getDescription(), fileName);
 
             final Issue note2 = report.get(33);
-            assertEquals(fileName, Severity.WARNING_LOW, note2.getSeverity());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", note2.getFileName());
-            assertEquals(fileName, "Control flow [Notifications]", note2.getCategory());
-            assertEquals(fileName, 130, note2.getLineStart());
-            assertEquals(fileName, 0, note2.getColumnStart());
-            assertEquals(fileName, 132, note2.getLineEnd());
-            assertEquals(fileName, 0, note2.getColumnEnd());
-            assertEquals(fileName, "NOTE: Loop may be unbounded", note2.getMessage());
+            assertEquals(Severity.WARNING_LOW, note2.getSeverity(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", note2.getFileName(), fileName);
+            assertEquals("Control flow [Notifications]", note2.getCategory(), fileName);
+            assertEquals(130, note2.getLineStart(), fileName);
+            assertEquals(0, note2.getColumnStart(), fileName);
+            assertEquals(132, note2.getLineEnd(), fileName);
+            assertEquals(0, note2.getColumnEnd(), fileName);
+            assertEquals("NOTE: Loop may be unbounded", note2.getMessage(), fileName);
             if (fileName.equals("report-18.04.xml")) {
-                assertEquals(fileName, "n/a", note2.getReference());
+                assertEquals("n/a", note2.getReference(), fileName);
             } else {
-                assertEquals(fileName, "n/A", note2.getReference());
+                assertEquals("n/A", note2.getReference(), fileName);
             }
-            assertEquals(fileName, "", note2.getDescription());
+            assertEquals("", note2.getDescription(), fileName);
         } else if (fileName.compareTo("report-21.04i2.xml") <= 0) {
-            assertEquals(fileName, 21, report.size());
+            assertEquals(21, report.size(), fileName);
 
             final Issue alarm1 = report.get(0);
-            assertEquals(fileName, Severity.WARNING_HIGH, alarm1.getSeverity());
-            assertEquals(fileName, "Incompatible object pointer conversion [Failed coding rule checks]", alarm1.getCategory());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/dhry/Proc1.c", alarm1.getFileName());
-            assertEquals(fileName, 7, alarm1.getLineStart());
-            assertEquals(fileName, 0, alarm1.getColumnStart());
-            assertEquals(fileName, 7, alarm1.getLineEnd());
-            assertEquals(fileName, 0, alarm1.getColumnEnd());
+            assertEquals(Severity.WARNING_HIGH, alarm1.getSeverity(), fileName);
+            assertEquals("Incompatible object pointer conversion [Failed coding rule checks]", alarm1.getCategory(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/dhry/Proc1.c", alarm1.getFileName(), fileName);
+            assertEquals(7, alarm1.getLineStart(), fileName);
+            assertEquals(0, alarm1.getColumnStart(), fileName);
+            assertEquals(7, alarm1.getLineEnd(), fileName);
+            assertEquals(0, alarm1.getColumnEnd(), fileName);
             if (fileName.compareTo("report-19.10.xml") <= 0) {
-                assertEquals(fileName, "[ conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R): check incompatible-object-pointer-conversion failed (violates A.1.11)", alarm1.getMessage());
+                assertEquals("[ conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R): check incompatible-object-pointer-conversion failed (violates A.1.11)", alarm1.getMessage(), fileName);
             } else if (fileName.compareTo("report-20.04.xml") <= 0) {
-                assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R): check incompatible-object-pointer-conversion failed (violates A.1.11)", alarm1.getMessage());
+                assertEquals("conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R): check incompatible-object-pointer-conversion failed (violates A.1.11)", alarm1.getMessage(), fileName);
             } else if (fileName.compareTo("report-21.04.xml") <= 0) {
-                assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage());
+                assertEquals("conversion between two incompatible pointer types: from &lt;RecordType*&gt; (aka &lt;struct Record*&gt;) to &lt;char*&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage(), fileName);
             } else {
-                assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType *&gt; (aka &lt;struct Record *&gt;) to &lt;char *&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage());
+                assertEquals("conversion between two incompatible pointer types: from &lt;RecordType *&gt; (aka &lt;struct Record *&gt;) to &lt;char *&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage(), fileName);
             }
-            assertEquals(fileName, "n/A", alarm1.getReference());
-            assertEquals(fileName,
-                "<p>Code:</p><pre>" +
+            assertEquals("n/A", alarm1.getReference(), fileName);
+            assertEquals("<p>Code:</p><pre>" +
                 "memcpy_x(&amp;((*(PtrParIn-&gt;PtrComp))), &amp;(*PtrGlb), sizeof((*(PtrParIn-&gt;PtrComp))));\n" +
                 "                                    ~~~~~~~~~~</pre>",
-                alarm1.getDescription());
+                alarm1.getDescription(),
+                fileName);
 
             final Issue alarm2 = report.get(19);
-            assertEquals(fileName, Severity.WARNING_HIGH, alarm2.getSeverity());
-            assertEquals(fileName, "Integer division by zero [Division or modulo by zero]", alarm2.getCategory());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/dhry/Proc7.c", alarm2.getFileName());
-            assertEquals(fileName, 8, alarm2.getLineStart());
-            assertEquals(fileName, 0, alarm2.getColumnStart());
-            assertEquals(fileName, 8, alarm2.getLineEnd());
-            assertEquals(fileName, 0, alarm2.getColumnEnd());
+            assertEquals(Severity.WARNING_HIGH, alarm2.getSeverity(), fileName);
+            assertEquals("Integer division by zero [Division or modulo by zero]", alarm2.getCategory(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/dhry/Proc7.c", alarm2.getFileName(), fileName);
+            assertEquals(8, alarm2.getLineStart(), fileName);
+            assertEquals(0, alarm2.getColumnStart(), fileName);
+            assertEquals(8, alarm2.getLineEnd(), fileName);
+            assertEquals(0, alarm2.getColumnEnd(), fileName);
             if (fileName.compareTo("report-20.04.xml") <= 0) {
-                assertEquals(fileName, "ALARM (A): integer division by zero {0}", alarm2.getMessage());
+                assertEquals("ALARM (A): integer division by zero {0}", alarm2.getMessage(), fileName);
             } else {
-                assertEquals(fileName, "ALARM (A) int_division_by_zero: divisor in {0}", alarm2.getMessage());
+                assertEquals("ALARM (A) int_division_by_zero: divisor in {0}", alarm2.getMessage(), fileName);
             }
-            assertEquals(fileName, "n/A", alarm2.getReference());
-            assertTrue(fileName, alarm2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n         ~~~~~~~~~~</pre><p>Context:</p><pre>l"));
-            assertTrue(fileName, alarm2.getDescription().endsWith("#call#Proc7</pre>"));
+            assertEquals("n/A", alarm2.getReference(), fileName);
+            assertTrue(alarm2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n         ~~~~~~~~~~</pre><p>Context:</p><pre>l"), fileName);
+            assertTrue(alarm2.getDescription().endsWith("#call#Proc7</pre>"), fileName);
 
             final Issue error1 = report.get(8);
-            assertEquals(fileName, Severity.ERROR, error1.getSeverity());
+            assertEquals(Severity.ERROR, error1.getSeverity(), fileName);
             if (fileName.compareTo("report-20.10.xml") <= 0) {
-                assertEquals(fileName, "Definite runtime error [Errors]", error1.getCategory());
+                assertEquals("Definite runtime error [Errors]", error1.getCategory(), fileName);
                 if (fileName.compareTo("report-20.04.xml") <= 0) {
-                    assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage());
+                    assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error1.getMessage(), fileName);
                 } else {
-                    assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
+                    assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage(), fileName);
                 }
             } else {
-                assertEquals(fileName, "Analysis stopped [Errors]", error1.getCategory());
-                assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
+                assertEquals("Analysis stopped [Errors]", error1.getCategory(), fileName);
+                assertEquals("ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage(), fileName);
             }
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/scenarios.c", error1.getFileName());
-            assertEquals(fileName, 76, error1.getLineStart());
-            assertEquals(fileName, 0, error1.getColumnStart());
-            assertEquals(fileName, 76, error1.getLineEnd());
-            assertEquals(fileName, 0, error1.getColumnEnd());
-            assertEquals(fileName, "n/A", error1.getReference());
+            assertEquals("/tmp/a3c-123456/examples/src/scenarios.c", error1.getFileName(), fileName);
+            assertEquals(76, error1.getLineStart(), fileName);
+            assertEquals(0, error1.getColumnStart(), fileName);
+            assertEquals(76, error1.getLineEnd(), fileName);
+            assertEquals(0, error1.getColumnEnd(), fileName);
+            assertEquals("n/A", error1.getReference(), fileName);
             if (fileName.compareTo("report-20.04.xml") <= 0) {
-                assertTrue(fileName, error1.getDescription().startsWith("<p>Context:</p><pre>l"));
+                assertTrue(error1.getDescription().startsWith("<p>Context:</p><pre>l"), fileName);
             } else {
-                assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>ArrayBlock[i] = i;\n~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+                assertTrue(error1.getDescription().startsWith("<p>Code:</p><pre>ArrayBlock[i] = i;\n~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"), fileName);
             }
-            assertTrue(fileName, error1.getDescription().endsWith("</pre>"));
+            assertTrue(error1.getDescription().endsWith("</pre>"), fileName);
 
             final Issue error2 = report.get(20);
-            assertEquals(fileName, Severity.ERROR, error2.getSeverity());
+            assertEquals(Severity.ERROR, error2.getSeverity(), fileName);
             if (fileName.compareTo("report-20.10.xml") <= 0) {
-                assertEquals(fileName, "Definite runtime error [Errors]", error2.getCategory());
+                assertEquals("Definite runtime error [Errors]", error2.getCategory(), fileName);
             } else {
-                assertEquals(fileName, "Analysis stopped [Errors]", error2.getCategory());
+                assertEquals("Analysis stopped [Errors]", error2.getCategory(), fileName);
             }
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/dhry/Proc7.c", error2.getFileName());
-            assertEquals(fileName, 8, error2.getLineStart());
-            assertEquals(fileName, 0, error2.getColumnStart());
-            assertEquals(fileName, 8, error2.getLineEnd());
-            assertEquals(fileName, 0, error2.getColumnEnd());
+            assertEquals("/tmp/a3c-123456/examples/src/dhry/Proc7.c", error2.getFileName(), fileName);
+            assertEquals(8, error2.getLineStart(), fileName);
+            assertEquals(0, error2.getColumnStart(), fileName);
+            assertEquals(8, error2.getLineEnd(), fileName);
+            assertEquals(0, error2.getColumnEnd(), fileName);
             if (fileName.compareTo("report-20.04.xml") <= 0) {
-                assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage());
+                assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context.", error2.getMessage(), fileName);
             } else if (fileName.compareTo("report-20.10.xml") <= 0) {
-                assertEquals(fileName, "ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
+                assertEquals("ERROR: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage(), fileName);
             } else {
-                assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage());
+                assertEquals("ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error2.getMessage(), fileName);
             }
-            assertEquals(fileName, "n/A", error2.getReference());
+            assertEquals("n/A", error2.getReference(), fileName);
             if (fileName.compareTo("report-20.04.xml") <= 0) {
-                assertTrue(fileName, error2.getDescription().startsWith("<p>Context:</p><pre>l"));
+                assertTrue(error2.getDescription().startsWith("<p>Context:</p><pre>l"), fileName);
             } else {
-                assertTrue(fileName, error2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
+                assertTrue(error2.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"), fileName);
             }
-            assertTrue(fileName, error2.getDescription().endsWith("</pre>"));
+            assertTrue(error2.getDescription().endsWith("</pre>"), fileName);
         } else {
-            assertEquals(fileName, 23, report.size());
+            assertEquals(23, report.size(), fileName);
 
             final Issue alarm1 = report.get(0);
-            assertEquals(fileName, Severity.WARNING_HIGH, alarm1.getSeverity());
-            assertEquals(fileName, "Incompatible object pointer conversion [Failed coding rule checks]", alarm1.getCategory());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/dhry/Proc1.c", alarm1.getFileName());
-            assertEquals(fileName, 7, alarm1.getLineStart());
-            assertEquals(fileName, 0, alarm1.getColumnStart());
-            assertEquals(fileName, 7, alarm1.getLineEnd());
-            assertEquals(fileName, 0, alarm1.getColumnEnd());
-            assertEquals(fileName, "conversion between two incompatible pointer types: from &lt;RecordType *&gt; (aka &lt;struct Record *&gt;) to &lt;char *&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage());
-            assertEquals(fileName, "n/A", alarm1.getReference());
-            assertEquals(fileName,
-                "<p>Code:</p><pre>" +
+            assertEquals(Severity.WARNING_HIGH, alarm1.getSeverity(), fileName);
+            assertEquals("Incompatible object pointer conversion [Failed coding rule checks]", alarm1.getCategory(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/dhry/Proc1.c", alarm1.getFileName(), fileName);
+            assertEquals(7, alarm1.getLineStart(), fileName);
+            assertEquals(0, alarm1.getColumnStart(), fileName);
+            assertEquals(7, alarm1.getLineEnd(), fileName);
+            assertEquals(0, alarm1.getColumnEnd(), fileName);
+            assertEquals("conversion between two incompatible pointer types: from &lt;RecordType *&gt; (aka &lt;struct Record *&gt;) to &lt;char *&gt;<br>ALARM (R) check_incompatible_object_pointer_conversion: check failed (violates A.1.11)", alarm1.getMessage(), fileName);
+            assertEquals("n/A", alarm1.getReference(), fileName);
+            assertEquals("<p>Code:</p><pre>" +
                 "memcpy_x(&amp;((*(PtrParIn-&gt;PtrComp))), &amp;(*PtrGlb), sizeof((*(PtrParIn-&gt;PtrComp))));\n" +
                 "                                    ~~~~~~~~~~</pre>",
-                alarm1.getDescription());
+                alarm1.getDescription(),
+                fileName);
 
             final Issue error1 = report.get(20);
-            assertEquals(fileName, Severity.ERROR, error1.getSeverity());
-            assertEquals(fileName, "Analysis stopped in critical context [Errors]", error1.getCategory());
-            assertEquals(fileName, "/tmp/a3c-123456/examples/src/dhry/Proc7.c", error1.getFileName());
-            assertEquals(fileName, 8, error1.getLineStart());
-            assertEquals(fileName, 0, error1.getColumnStart());
-            assertEquals(fileName, 8, error1.getLineEnd());
-            assertEquals(fileName, 0, error1.getColumnEnd());
-            assertEquals(fileName, "ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage());
-            assertEquals(fileName, "n/A", error1.getReference());
-            assertTrue(fileName, error1.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"));
-            assertTrue(fileName, error1.getDescription().endsWith("#call#Proc7</pre>"));
+            assertEquals(Severity.ERROR, error1.getSeverity(), fileName);
+            assertEquals("Analysis stopped in critical context [Errors]", error1.getCategory(), fileName);
+            assertEquals("/tmp/a3c-123456/examples/src/dhry/Proc7.c", error1.getFileName(), fileName);
+            assertEquals(8, error1.getLineStart(), fileName);
+            assertEquals(0, error1.getColumnStart(), fileName);
+            assertEquals(8, error1.getLineEnd(), fileName);
+            assertEquals(0, error1.getColumnEnd(), fileName);
+            assertEquals("ERROR analysis_stopped: Definite runtime error during assignment in this context. Analysis stopped for this context", error1.getMessage(), fileName);
+            assertEquals("n/A", error1.getReference(), fileName);
+            assertTrue(error1.getDescription().startsWith("<p>Code:</p><pre>IntLoc = IntParI1/0;\n~~~~~~~~~~~~~~~~~~~</pre><p>Context:</p><pre>l"), fileName);
+            assertTrue(error1.getDescription().endsWith("#call#Proc7</pre>"), fileName);
         }
     }
 }
