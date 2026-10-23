@@ -40,10 +40,10 @@ import hudson.tasks.BuildStepDescriptor;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -53,7 +53,7 @@ import java.util.regex.Matcher;
 /**
  *
  * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
+ * {@link DescriptorImpl#newInstance(StaplerRequest2, JSONObject)} is invoked
  * and a new {@link AstreeBuilder} is created. The created
  * instance is persisted to the project configuration XML by using
  * XStream, so this allows you to use instance fields 
@@ -679,7 +679,7 @@ public class AstreeBuilder extends Builder implements SimpleBuildStep {
  * @throws FormException           as super class
  */
         @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject formData) throws FormException {
             // To persist global configuration information,
             // set that to properties and call save().
             this.alauncher     = formData.getString("alauncher");
