@@ -18,8 +18,8 @@ import edu.hm.hafner.analysis.Severity;
  */
 public class AstreeReportParserTest {
     @Test
-    public void test() {
-        final File dir = new File(getClass().getResource("").getPath());
+    public void test() throws Exception {
+        final File dir = new File(getClass().getResource("").toURI());
         for (File file : dir.listFiles()) {
             if (!file.getName().endsWith(".xml"))
                 continue;
