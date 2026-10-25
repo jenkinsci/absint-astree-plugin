@@ -19,6 +19,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.version>2.479.3</jenkins.version>
+    <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
 
   <name>AbsInt Astrée Plugin for Jenkins</name>
